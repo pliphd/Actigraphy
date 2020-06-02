@@ -12,7 +12,7 @@ gapseries   = actigraphy <= 0;
 
 if any(gapseries)
     gap = DetConstantOne(gapseries);
-    gap(gap(:, 2) - gap(:, 1) < minDuration) = [];
+    gap(gap(:, 2) - gap(:, 1) < minDuration, :) = [];
 else
     gap = [];
 end
