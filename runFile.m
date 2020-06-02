@@ -15,7 +15,7 @@ writeFile     = fullfile(destination, [filename '.' lower(process(4:end))]);
 
 actigraphy = load(source);
 
-[toFile, res, fmt] = feval(process, actigraphy, epoch);
+[toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch);
 
 if ~(isempty(toFile))
     fin = fopen(writeFile, 'w');
