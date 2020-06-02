@@ -16,8 +16,11 @@ writeFile     = fullfile(destination, [filename '.' lower(process(4:end))]);
 actigraphy = load(source);
 
 [toFile, res, fmt] = feval(process, actigraphy, epoch);
-fin = fopen(writeFile, 'w');
-fprintf(fin, '%d\t%d\r', toFile');
-fclose(fin);
+
+if ~(isempty(toFile))
+    fin = fopen(writeFile, 'w');
+    fprintf(fin, '%d\t%d\r', toFile');
+    fclose(fin);
+end
 
 fprintf(fid, fmt, res);
