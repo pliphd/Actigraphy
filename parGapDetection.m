@@ -10,6 +10,18 @@ function parGapDetection(source, destination, epoch)
 
 allFiles = dir(fullfile(source, '*.txt'));
 
+disp('==\t\tGAP DETECTION\t\t==');
+fprintf('==\t%d files to process\t\t==', numel(allFiles));
+
+p = gcp('nocreate');
+if isempty(p)
+    p = parpool;
+    poolsize = p.NumWorkers;
+else
+    poolsize = p.NumWorkers;
+end
+fprintf('==\tdistributed into %d workers\t==', poolsize);
+
 % create unique file id within each worker
 c = parallel.pool.Constant(@() fopen(tempname(destination), 'wt'), @fclose);
 spmd
@@ -19,7 +31,13 @@ end
 parfor idx = 1:numel(allFiles)
     curFile = fullfile(source, allFiles(idx).name);
     runFile('detGap', curFile, destination, epoch, c.Value);
+    
+    if mod(idx, 100) == 0
+        fprintf('==\t%d done \t\t ==', idx);
+    end
 end
 
 % throw c to run fclose
 clear c;
+
+disp('==\t\tFINISHED!\t\t==');
