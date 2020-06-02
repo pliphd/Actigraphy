@@ -16,8 +16,8 @@ spmd
     fopen(c.Value);
 end
 
-parfor idx = 1:length(allFiles)
-    curFile = fullfile(source, allFile(idx).name);
+parfor idx = 1:numel(allFiles)
+    curFile = fullfile(source, allFiles(idx).name);
     runFile('detGap', curFile, destination, epoch, c.Value);
 end
 
