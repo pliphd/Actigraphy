@@ -18,7 +18,7 @@ else
 end
 
 % request results
-aLenInDay = length(actigraphy) * epoch / 60 / 60 / 24;
+aLenInDay = round(length(actigraphy) * epoch / 60 / 60 / 24);
 
 if ~isempty(gap)
     gapPerc = sum(gap(:, 2) - gap(:, 1) + 1) / length(actigraphy);
@@ -27,4 +27,4 @@ else
 end
 
 res = [aLenInDay, gapPerc];
-fmt = '%d\t%f\r';
+fmt = '%d\t%.2f\r';
