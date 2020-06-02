@@ -23,4 +23,4 @@ if ~(isempty(toFile))
     fclose(fin);
 end
 
-fprintf(fid, fmt, res);
+fprintf(fid, ['%s\t' fmt], filename, res);
