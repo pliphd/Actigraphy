@@ -10,8 +10,8 @@ function parGapDetection(source, destination, epoch)
 
 allFiles = dir(fullfile(source, '*.txt'));
 
-fprintf('==\tGAP DETECTION\t\t\t==\r');
-fprintf('==\t%d files to process\t\t==\r', numel(allFiles));
+fprintf('==\tGAP DETECTION\r');
+fprintf('==\t%d files to process\r', numel(allFiles));
 
 p = gcp('nocreate');
 if isempty(p)
@@ -20,16 +20,16 @@ if isempty(p)
 else
     poolsize = p.NumWorkers;
 end
-fprintf('==\tdistributed into %d workers\t==\r', poolsize);
+fprintf('==\tdistributed into %d workers\r', poolsize);
 
 % q the status within parfor
 q = parallel.pool.DataQueue;
-afterEach(q, @disp);
+q.afterEach(@(x) prog(x));
 
 % create unique file id within each worker
 c = parallel.pool.Constant(@() fopen(tempname(destination), 'wt'), @fclose);
 spmd
-    fopen(c.Value);
+    A = fopen(c.Value);
 end
 
 parfor idx = 1:numel(allFiles)
@@ -42,4 +42,22 @@ end
 % throw c to run fclose
 clear c;
 
-fprintf('==\tFINISHED!\t\t\t==\r');
+% merge
+fprintf('==\tstarting consolidation\r');
+spmd
+    tblLab = readtable(A, 'ReadVariableNames', 0, ...
+        'Delimiter', '\t');
+end
+tbl = vertcat(tblLab{:});
+tbl.Properties.VariableNames = {'filename', 'data_length', 'gap_perc'};
+writetable(tbl, fullfile(destination, 'gap_stat.sum'), 'FileType', 'text');
+fprintf('==\tresults consolidated\r');
+
+fprintf('==\tFINISHED\r');
+end
+
+function prog(x)
+if mod(x, 500) == 0
+    fprintf('==\t%d done\r', x)
+end
+end
