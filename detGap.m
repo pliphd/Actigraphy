@@ -19,6 +19,12 @@ end
 
 % request results
 aLenInDay = length(actigraphy) * epoch / 60 / 60 / 24;
-gapPerc   = sum(gap(:, 2) - gap(:, 1) + 1) / length(actigraphy);
+
+if ~isempty(gap)
+    gapPerc = sum(gap(:, 2) - gap(:, 1) + 1) / length(actigraphy);
+else
+    gapPerc = 0;
+end
+
 res = [aLenInDay, gapPerc];
 fmt = '%d\t%f\r';
