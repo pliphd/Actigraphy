@@ -24,7 +24,7 @@ fprintf('==\tdistributed into %d workers\t==\r', poolsize);
 
 % q the status within parfor
 q = parallel.pool.DataQueue;
-afterEach(q, @(x) prog(x));
+afterEach(q, @prog);
 
 % create unique file id within each worker
 c = parallel.pool.Constant(@() fopen(tempname(destination), 'wt'), @fclose);
@@ -43,10 +43,10 @@ end
 clear c;
 
 fprintf('==\tFINISHED!\t\t==\r');
-end
 
-function prog(x)
-if mod(x, 100) == 0
-    fprintf('==\t%d done \t\t ==\r', x);
-end
+    function prog(~)
+        if mod(idx, 100) == 0
+            fprintf('==\t%d done \t\t ==\r', idx);
+        end
+    end
 end
