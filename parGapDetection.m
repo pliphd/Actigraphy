@@ -10,7 +10,7 @@ function parGapDetection(source, destination, epoch)
 
 allFiles = dir(fullfile(source, '*.txt'));
 
-fprintf('==\tGAP DETECTION\t\t==\r');
+fprintf('==\tGAP DETECTION\t\t\t==\r');
 fprintf('==\t%d files to process\t\t==\r', numel(allFiles));
 
 p = gcp('nocreate');
@@ -24,7 +24,7 @@ fprintf('==\tdistributed into %d workers\t==\r', poolsize);
 
 % q the status within parfor
 q = parallel.pool.DataQueue;
-afterEach(q, @prog);
+afterEach(q, @disp);
 
 % create unique file id within each worker
 c = parallel.pool.Constant(@() fopen(tempname(destination), 'wt'), @fclose);
@@ -42,11 +42,4 @@ end
 % throw c to run fclose
 clear c;
 
-fprintf('==\tFINISHED!\t\t==\r');
-
-    function prog(~)
-        if mod(idx, 100) == 0
-            fprintf('==\t%d done \t\t ==\r', idx);
-        end
-    end
-end
+fprintf('==\tFINISHED!\t\t\t==\r');
