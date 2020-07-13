@@ -1,4 +1,4 @@
-function runFile(process, source, destination, epoch, fid)
+function runFile(process, source, destination, epoch, fid, varargin)
 %RUNFILE run a process on a specific file
 %   
 %   RUNFILE(PROCESS, SOURCE, DESTIMATION, EPOCH, FID) does PROCESS in file 
@@ -15,12 +15,33 @@ writeFile     = fullfile(destination, [filename '.' lower(process(4:end))]);
 
 actigraphy = load(source);
 
-[toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch);
-
-if ~(isempty(toFile))
-    fin = fopen(writeFile, 'w');
-    fprintf(fin, '%d\t%d\r', toFile');
-    fclose(fin);
+% parse arg
+if nargin > 5
+    option = varargin{1};
+    switch option.starttime
+        case 'fixed'
+            starttime = option.time;
+        case 'filename'
+            starttime = feval(option.file, filename);
+    end
+    windowLength = option.windowLength;
 end
 
-fprintf(fid, ['%s\t' fmt], filename, res);
+if nargin == 5
+    [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch);
+else
+    toFile = feval(process, actigraphy(:, 1), epoch, starttime, windowLength);
+end
+
+if ~(isempty(toFile))
+    switch process
+        case 'detGap'
+            fin = fopen(writeFile, 'w');
+            fprintf(fin, '%d\t%d\r', toFile');
+            fclose(fin);
+            
+            fprintf(fid, ['%s\t' fmt], filename, res);
+        case 'detTotalActivity'
+            writetable(toFile, writeFile, 'FileType', 'text');
+    end
+end
