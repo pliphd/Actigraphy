@@ -22,7 +22,12 @@ if nargin > 5
         case 'fixed'
             starttime = option.time;
         case 'filename'
-            starttime = feval(option.file, filename);
+            out = feval(option.file, filename);
+            starttime = out.starttime;
+            
+            if isfield(out, 'epoch')
+                epoch = out.epoch; % overwrite epoch if applicable
+            end
     end
     windowLength = option.windowLength;
 end
