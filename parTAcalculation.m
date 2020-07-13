@@ -28,31 +28,12 @@ fprintf('==\tdistributed into %d workers\r', poolsize);
 q = parallel.pool.DataQueue;
 q.afterEach(@(x) prog(x));
 
-% create unique file id within each worker
-c = parallel.pool.Constant(@() fopen(tempname(destination), 'wt'), @fclose);
-spmd
-    A = fopen(c.Value);
-end
-
 parfor idx = 1:numel(allFiles)
     curFile = fullfile(source, allFiles(idx).name);
-    runFile('detTotalActivity', curFile, destination, epoch, c.Value);
+    runFile('detTotalActivity', curFile, destination, epoch, [], option);
     
     send(q, idx);
 end
-
-% throw c to run fclose
-clear c;
-
-% merge
-fprintf('==\tstarting consolidation\r');
-spmd
-    tblLab = readtable(A, 'ReadVariableNames', 0, ...
-        'Delimiter', '\t');
-end
-tbl = vertcat(tblLab{:});
-writetable(tbl, fullfile(destination, 'ta_stat.sum'), 'FileType', 'text');
-fprintf('==\tresults consolidated\r');
 
 fprintf('==\tFINISHED\r');
 end
