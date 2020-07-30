@@ -18,35 +18,52 @@ actigraphy = load(source);
 % parse arg
 if nargin > 5
     option = varargin{1};
-    switch option.starttime
-        case 'fixed'
-            starttime = option.time;
-        case 'filename'
-            out = feval(option.file, filename);
-            starttime = out.starttime;
-            
-            if isfield(out, 'epoch')
-                epoch = out.epoch; % overwrite epoch if applicable
-            end
+    
+    if isfield(option, 'starttime')
+        switch option.starttime
+            case 'fixed'
+                starttime = option.time;
+            case 'filename'
+                out = feval(option.file, filename);
+                starttime = out.starttime;
+                
+                if isfield(out, 'epoch')
+                    epoch = out.epoch; % overwrite epoch if applicable
+                end
+        end
     end
-    windowLength = option.windowLength;
+    
+    if isfield(option, 'windowLength')
+        windowLength = option.windowLength;
+    end
+    
+    if isfield(option, 'region')
+        region = option.region;
+    end
 end
 
-if nargin == 5
-    [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch);
-else
-    toFile = feval(process, actigraphy(:, 1), epoch, starttime, windowLength);
+switch process
+    case 'detGap'
+        [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch);
+    case 'detTotalActivity'
+        toFile = feval(process, actigraphy(:, 1), epoch, starttime, windowLength);
+    case 'detAlpha'
+        [res, fmt] = feval(process, actigraphy(:, 1), epoch, region, filename, starttime, destination);
 end
 
-if ~(isempty(toFile))
-    switch process
-        case 'detGap'
+switch process
+    case 'detGap'
+        if ~(isempty(toFile))
             fin = fopen(writeFile, 'w');
             fprintf(fin, '%d\t%d\r', toFile');
             fclose(fin);
-            
-            fprintf(fid, ['%s\t' fmt], filename, res);
-        case 'detTotalActivity'
-            writetable(toFile, writeFile, 'FileType', 'text');
-    end
+        end
+        
+        fprintf(fid, ['%s\t' fmt], filename, res);
+    case 'detTotalActivity'
+        writetable(toFile, writeFile, 'FileType', 'text');
+    case 'detAlpha'
+        for iR = 1:size(res, 1)
+            fprintf(fid, ['%s\t' fmt], filename, res(iR, :));
+        end
 end
