@@ -9,7 +9,8 @@ function parAlphaDetection(source, destination, epoch, option)
 %   $Author:    Peng Li
 %
 
-allFiles = dir(fullfile(source, '*.txt'));
+% to amend, including name patterns as input
+allFiles = dir(fullfile(source, '*epoch15.txt'));
 
 fprintf('==\tDFA PROC\r');
 fprintf('==\t%d files to process\r', numel(allFiles));
