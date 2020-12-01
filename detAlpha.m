@@ -12,7 +12,7 @@ function [res, fmt] = detAlpha(actigraphy, epoch, varargin)
 % 
 
 % to be modified
-narginchk(6, 6);
+narginchk(7, 7);
 
 region     = varargin{1};
 filename   = varargin{2};
@@ -26,7 +26,7 @@ t   = linspace(startTime, endTime, length(actigraphy))';
 pts = physiologicaltimeseries(actigraphy, t);
 
 % to include gaps
-pts.Quality  = ones(size(actigraphy));
+pts.Quality  = varargin{5};
 pts.UserData = struct('Epoch', epoch);
 
 pts.Name     = filename;
