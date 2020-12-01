@@ -10,10 +10,20 @@ function runFile(process, source, destination, epoch, fid, varargin)
 % 
 
 % parse inputs to generate file name
-[~, filename] = fileparts(source);
-writeFile     = fullfile(destination, [filename '.' lower(process(4:end))]);
-
+[srcPath, filename] = fileparts(source);
+writeFile  = fullfile(destination, [filename '.' lower(process(4:end))]);
 actigraphy = load(source);
+
+% load gap if exist
+quality = ones(size(actigraphy, 1), 1);
+gapFile = fullfile(srcPath, [filename(1:end-4) '.gap']);
+if exist(gapFile, 'file') == 2
+    gap = load(gapFile);
+    
+    for iS = 1:size(gap, 1)
+        quality(gap(iS, 1):gap(iS, 2)) = 0;
+    end
+end
 
 % parse arg
 if nargin > 5
@@ -45,14 +55,16 @@ end
 switch process
     case 'detGap'
         [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch);
+    case 'calGap'
+        [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, quality);
     case 'detTotalActivity'
         toFile = feval(process, actigraphy(:, 1), epoch, starttime, windowLength);
     case 'detAlpha'
-        [res, fmt] = feval(process, actigraphy(:, 1), epoch, region, filename, starttime, destination);
+        [res, fmt] = feval(process, actigraphy(:, 1), epoch, region, filename, starttime, destination, quality);
 end
 
 switch process
-    case 'detGap'
+    case {'detGap', 'calGap'}
         if ~(isempty(toFile))
             fin = fopen(writeFile, 'w');
             fprintf(fin, '%d\t%d\r', toFile');
