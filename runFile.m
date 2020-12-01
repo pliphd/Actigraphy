@@ -16,7 +16,7 @@ actigraphy = load(source);
 
 % load gap if exist
 quality = ones(size(actigraphy, 1), 1);
-gapFile = fullfile(srcPath, [filename(1:end-4) '.gap']);
+gapFile = fullfile(srcPath, [filename '.gap']);
 if exist(gapFile, 'file') == 2
     gap = load(gapFile);
     
