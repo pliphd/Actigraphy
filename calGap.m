@@ -10,7 +10,6 @@ gapseries = ~quality;
 
 if any(gapseries)
     gap = DetConstantOne(gapseries);
-    gap(gap(:, 2) - gap(:, 1) < minDuration, :) = [];
 else
     gap = [];
 end
