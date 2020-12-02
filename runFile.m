@@ -20,8 +20,10 @@ gapFile = fullfile(srcPath, [filename '.gap']);
 if exist(gapFile, 'file') == 2
     gap = load(gapFile);
     
-    for iS = 1:size(gap, 1)
-        quality(gap(iS, 1):gap(iS, 2)) = 0;
+    if ~isempty(gap)
+        for iS = 1:size(gap, 1)
+            quality(gap(iS, 1):gap(iS, 2)) = 0;
+        end
     end
 end
 
