@@ -16,14 +16,18 @@ actigraphy = load(source);
 
 % load gap if exist
 quality = ones(size(actigraphy, 1), 1);
-gapFile = fullfile(srcPath, [filename '.gap']);
-if exist(gapFile, 'file') == 2
-    gap = load(gapFile);
-    
-    if ~isempty(gap)
-        for iS = 1:size(gap, 1)
-            quality(gap(iS, 1):gap(iS, 2)) = 0;
-        end
+gapFile1 = fullfile(srcPath, [filename '.gap']);
+gapFile2 = fullfile(srcPath, 'Gap', [filename '.gap']);
+if exist(gapFile1, 'file') == 2
+    gap = load(gapFile1);
+elseif exist(gapFile2, 'file') == 2
+    gap = load(gapFile2);
+else
+    gap = [];
+end
+if ~isempty(gap)
+    for iS = 1:size(gap, 1)
+        quality(gap(iS, 1):gap(iS, 2)) = 0;
     end
 end
 
@@ -52,6 +56,14 @@ if nargin > 5
     if isfield(option, 'region')
         region = option.region;
     end
+    
+    if isfield(option, 'sleepWindow')
+        window = option.sleepWindow;
+    end
+    
+    if isfield(option, 'sleepParameter')
+        parameter = option.sleepParameter;
+    end
 end
 
 switch process
@@ -64,7 +76,7 @@ switch process
     case 'detAlpha'
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, region, filename, starttime, destination, quality);
     case 'detSleep'
-        [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, starttime, quality);
+        [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, starttime, quality, window, parameter);
 end
 
 switch process
