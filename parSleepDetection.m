@@ -51,7 +51,9 @@ spmd
         'Delimiter', '\t');
 end
 tbl = vertcat(tblLab{:});
-tbl.Properties.VariableNames = {'filename', 'sleep_duration_avg', 'numbers_awake_avg'};
+tbl.Properties.VariableNames = {'filename', ...
+    ['sleep_duration_' replace(option.sleepWindow.StartTime, ':', '') '_' replace(option.sleepWindow.EndTime, ':', '') '_avg'], ...
+    'numbers_awake_avg'};
 writetable(tbl, fullfile(destination, 'sleep_stat.sum'), 'FileType', 'text');
 fprintf('==\tresults consolidated\r');
 
