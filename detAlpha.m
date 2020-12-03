@@ -1,7 +1,7 @@
 function [res, fmt] = detAlpha(actigraphy, epoch, varargin)
 %DETALPHA do detrended fluctuation analysis and fit results
 %   
-%   [RES, FMT] = DETALPHA(ACTIGRAPHY, EPOCH, REGION, FILENAME, STARTTIME, FILEPATH)
+%   [RES, FMT] = DETALPHA(ACTIGRAPHY, EPOCH, REGION, FILENAME, STARTTIME, FILEPATH, QUALITY)
 %       performs detrended fluctuation analysis on ACTIGRAPHY of epoch 
 %       length EPOCH second and fits the results in region REGION minutes
 %       RES saves fitting results together with min/max scale, goodness and
