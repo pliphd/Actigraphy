@@ -60,13 +60,15 @@ switch process
     case 'calGap'
         [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, quality);
     case 'detTotalActivity'
-        toFile = feval(process, actigraphy(:, 1), epoch, starttime, windowLength);
+        toFile             = feval(process, actigraphy(:, 1), epoch, starttime, windowLength);
     case 'detAlpha'
-        [res, fmt] = feval(process, actigraphy(:, 1), epoch, region, filename, starttime, destination, quality);
+        [res, fmt]         = feval(process, actigraphy(:, 1), epoch, region, filename, starttime, destination, quality);
+    case 'detSleep'
+        [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, starttime, quality);
 end
 
 switch process
-    case {'detGap', 'calGap'}
+    case {'detGap', 'calGap', 'detSleep'}
         if ~(isempty(toFile))
             fin = fopen(writeFile, 'w');
             fprintf(fin, '%d\t%d\r', toFile');
