@@ -44,5 +44,9 @@ theDFA.fit;
 theDFA.save('outdir', fullfile(filepath, 'dfa'), 'option', 'fn');
 
 % request summary results here
-res = theDFA.fitResult{:, 2:end};
+if ~isempty(theDFA.fitResult)
+    res = theDFA.fitResult{:, 2:end};
+else
+    res = [nan nan nan nan nan];
+end
 fmt = '%.2f\t%.2f\t%f\t%f\t%f\r';
