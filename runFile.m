@@ -73,7 +73,7 @@ switch process
         [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, quality);
     case 'detTotalActivity'
         toFile             = feval(process, actigraphy(:, 1), epoch, starttime, windowLength);
-    case 'detAlpha'
+    case {'detAlpha', 'detMag'}
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, region, filename, starttime, destination, quality);
     case 'detSleep'
         [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, starttime, quality, window, parameter);
@@ -90,7 +90,7 @@ switch process
         fprintf(fid, ['%s\t' fmt], filename, res);
     case 'detTotalActivity'
         writetable(toFile, writeFile, 'FileType', 'text');
-    case 'detAlpha'
+    case {'detAlpha', 'detMag'}
         for iR = 1:size(res, 1)
             fprintf(fid, ['%s\t' fmt], filename, res(iR, :));
         end
