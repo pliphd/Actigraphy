@@ -57,6 +57,10 @@ if nargin > 5
         region = option.region;
     end
     
+    if isfield(option, 'cycleLength')
+        cyclen = option.cycleLength;
+    end
+    
     if isfield(option, 'sleepWindow')
         window = option.sleepWindow;
     end
@@ -77,6 +81,8 @@ switch process
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, region, filename, starttime, destination, quality);
     case 'detSleep'
         [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, starttime, quality, window, parameter);
+    case 'detUPMEMD'
+        [res, fmt]         = feval(process, actigraphy(:, 1), epoch, cyclen, filename, starttime, destination, quality);
 end
 
 switch process
@@ -94,4 +100,6 @@ switch process
         for iR = 1:size(res, 1)
             fprintf(fid, ['%s\t' fmt], filename, res(iR, :));
         end
+    case 'detUPMEMD'
+        fprintf(fid, ['%s\t' fmt], filename, res);
 end
