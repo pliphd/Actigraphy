@@ -10,7 +10,7 @@ function parUPMEMDDetection(source, destination, epoch, option)
 %
 
 % to amend, including name patterns as input
-allFiles = dir(fullfile(source, '*.txt'));
+allFiles = dir(fullfile(source, '*epoch15.txt'));
 
 fprintf('==\tUPMEMD PROC\r');
 fprintf('==\t%d files to process\r', numel(allFiles));
