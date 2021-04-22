@@ -21,6 +21,8 @@ function sleepSeries = doSleepDet2(data, epoch, V, P, C)
 %               simultaneously
 %           Dec 02, 2020
 %               incorporate gap info so remove off-wrist detection
+%           Apr 22, 2021
+%               add options to prevent empty sleepEpi
 % 
 
 rescale = 60 / epoch;
@@ -88,15 +90,17 @@ wakeSeriesAfterC = seg2Series(wakeEpi, length(sleepSeries));
 wakeEpi    = detConstantOne(~sleepSeries);
 sleepEpi   = detConstantOne(sleepSeries);
 
-if sleepEpi(1, 1) == 1
-    wakeEpi = [0 1; wakeEpi]; % disrecard first sleep episode if no wake episode before it, do nothing
+if ~isempty(sleepEpi)
+    if sleepEpi(1, 1) == 1
+        wakeEpi = [0 1; wakeEpi]; % disrecard first sleep episode if no wake episode before it, do nothing
+    end
+    if sleepEpi(end, 2) == length(sleepSeries)
+        wakeEpi = [wakeEpi; 0 1]; % disrecard last sleep episode if no wake episode after it, do nothing
+    end
+    
+    merg = sleepEpi(:, 2) - sleepEpi(:, 1) <= 6 & (wakeEpi(1:end-1, 2) - wakeEpi(1:end-1, 1) + wakeEpi(2:end, 2) - wakeEpi(2:end, 1) >= 10);
+    sleepEpi(merg, :) = [];
 end
-if sleepEpi(end, 2) == length(sleepSeries)
-    wakeEpi = [wakeEpi; 0 1]; % disrecard last sleep episode if no wake episode after it, do nothing
-end
-
-merg = sleepEpi(:, 2) - sleepEpi(:, 1) <= 6 & (wakeEpi(1:end-1, 2) - wakeEpi(1:end-1, 1) + wakeEpi(2:end, 2) - wakeEpi(2:end, 1) >= 10);
-sleepEpi(merg, :) = [];
 
 % wake series d
 wakeSeriesAfterD = ~seg2Series(sleepEpi, length(sleepSeries));
@@ -105,15 +109,17 @@ wakeSeriesAfterD = ~seg2Series(sleepEpi, length(sleepSeries));
 sleepEpi    = detConstantOne(sleepSeries);
 wakeEpi     = detConstantOne(~sleepSeries);
 
-if sleepEpi(1, 1) == 1
-    wakeEpi = [0 1; wakeEpi]; % disrecard first sleep episode if no wake episode before it, do nothing
+if ~isempty(sleepEpi)
+    if sleepEpi(1, 1) == 1
+        wakeEpi = [0 1; wakeEpi]; % disrecard first sleep episode if no wake episode before it, do nothing
+    end
+    if sleepEpi(end, 2) == length(sleepSeries)
+        wakeEpi = [wakeEpi; 0 1]; % disrecard last sleep episode if no wake episode after it, do nothing
+    end
+    
+    merg = sleepEpi(:, 2) - sleepEpi(:, 1) <= 10 & (wakeEpi(1:end-1, 2) - wakeEpi(1:end-1, 1) + wakeEpi(2:end, 2) - wakeEpi(2:end, 1) >= 20);
+    sleepEpi(merg, :) = [];
 end
-if sleepEpi(end, 2) == length(sleepSeries)
-    wakeEpi = [wakeEpi; 0 1]; % disrecard last sleep episode if no wake episode after it, do nothing
-end
-
-merg = sleepEpi(:, 2) - sleepEpi(:, 1) <= 10 & (wakeEpi(1:end-1, 2) - wakeEpi(1:end-1, 1) + wakeEpi(2:end, 2) - wakeEpi(2:end, 1) >= 20);
-sleepEpi(merg, :) = [];
 
 % wake series e
 wakeSeriesAfterE = ~seg2Series(sleepEpi, length(sleepSeries));
