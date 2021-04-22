@@ -8,6 +8,8 @@ function MatNew = transSegGap(MatOld, Length)
 % $Date:    May 4, 2016
 % $Modif.:  Feb 28, 2017
 %               add option for empty MatOld
+%           Apr 22, 2021
+%               add option for empty MatNew
 % 
 
 if ~isempty(MatOld)
