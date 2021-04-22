@@ -10,7 +10,8 @@ function parSleepDetection(source, destination, epoch, option)
 %   $Date:      Dec 3, 2020
 %
 
-allFiles = dir(fullfile(source, '*.txt'));
+% to amend, including name patterns as input
+allFiles = dir(fullfile(source, '*epoch15.txt'));
 
 fprintf('==\tSLEEP DETECTION\r');
 fprintf('==\t%d files to process\r', numel(allFiles));
