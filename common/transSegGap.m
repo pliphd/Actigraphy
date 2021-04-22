@@ -33,11 +33,13 @@ if ~isempty(MatOld)
     MatNew(:, 1)   = MatNew(:, 1)   + 1;
     MatNew(:, end) = MatNew(:, end) - 1;
     
-    if MatNew(1) == 2 && Shift1 == 0
-        MatNew(1) = 1;
-    end
-    if MatNew(end) == Length - 1 && Shiftend == 0
-        MatNew(end) = Length;
+    if ~isempty(MatNew)
+        if MatNew(1) == 2 && Shift1 == 0
+            MatNew(1) = 1;
+        end
+        if MatNew(end) == Length - 1 && Shiftend == 0
+            MatNew(end) = Length;
+        end
     end
 else
     MatNew = [1 Length];
