@@ -1,10 +1,12 @@
-function maskSeries = doMask2(dataLength, epochInSec, dataStartTime, maskStartTimestr, maskEndTimestr)
+function [maskSeries, maskWindow] = doMask2(dataLength, epochInSec, dataStartTime, maskStartTimestr, maskEndTimestr)
 %DOMASK2 generate masking series based on start and end time
 % 
 % $Author:  Peng Li
 % $Date:    Jan 09, 2020
 % $Modif.:  Dec 02, 2020
 %               relocation
+%           May 17, 2021
+%               output maskWindow for use in next step
 % 
 
 totalDays = ceil(dataLength .* epochInSec ./ 3600 ./ 24);
@@ -25,5 +27,5 @@ days(days(:, 1) <= dataStartTime, 1) = dataStartTime;
 days(days(:, 2) >= recEnd, 2) = recEnd;
 days(days(:, 2) - days(:, 1) <= seconds(1), :) = [];
 
-daysPoints = round(hours(days - dataStartTime) * 3600 / epochInSec + 1);
-maskSeries = ~gap2Series(daysPoints, dataLength);
+maskWindow = round(hours(days - dataStartTime) * 3600 / epochInSec + 1);
+maskSeries = ~gap2Series(maskWindow, dataLength);
