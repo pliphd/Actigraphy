@@ -68,6 +68,10 @@ if nargin > 5
     if isfield(option, 'sleepParameter')
         parameter = option.sleepParameter;
     end
+    
+    if isfield(option, 'isivInfo')
+        isivInfo = option.isivInfo;
+    end
 end
 
 switch process
@@ -83,6 +87,8 @@ switch process
         [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, starttime, quality, window, parameter);
     case 'detUPMEMD'
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, cyclen, filename, starttime, destination, quality);
+    case 'detNonparametric'
+        [res, fmt]         = feval(process, actigraphy(:, 1), epoch, starttime, quality, isivInfo);
 end
 
 switch process
@@ -100,6 +106,6 @@ switch process
         for iR = 1:size(res, 1)
             fprintf(fid, ['%s\t' fmt], filename, res(iR, :));
         end
-    case 'detUPMEMD'
+    case {'detUPMEMD', 'detNonparametric'}
         fprintf(fid, ['%s\t' fmt], filename, res);
 end
