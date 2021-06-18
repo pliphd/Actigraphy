@@ -22,17 +22,23 @@ classdef acti < timeseries
         Gap
         Sleep
         SleepSummary
+        ISIVSummary
+        M10L5Summary
     end
     properties (SetAccess = protected, Hidden = true)
         Gap_
         Sleep_
         SleepSummary_
+        ISIVSummary_
+        M10L5Summary_
     end
     
     properties
         SleepInfo = struct('StartTime', '', ...
             'EndTime', '', ...
             'ModeParameter', struct('P', [], 'V', [], 'C', []))
+        
+        ISIVInfo = struct('TimeScaleInMin', [], 'PeriodInHour', [], 'FixedCycles', [])
     end
     
     properties (Dependent = true, Hidden = true)
@@ -128,6 +134,20 @@ classdef acti < timeseries
         function val = get.SleepSummary(this)
             val = this.SleepSummary_;
         end
+        
+        function this = set.ISIVSummary(this, val)
+            this.ISIVSummary_ = val;
+        end
+        function val = get.ISIVSummary(this)
+            val = this.ISIVSummary_;
+        end
+        
+        function this = set.M10L5Summary(this, val)
+            this.M10L5Summary_ = val;
+        end
+        function val = get.M10L5Summary(this)
+            val = this.M10L5Summary_;
+        end
     end
     
     %% methods -- declaration only
@@ -135,6 +155,8 @@ classdef acti < timeseries
         % processing
         this = gapDet(this);
         this = sleepDet(this);
+        this = isivAnalysis(this);
+        this = m10l5Analysis(this);
         
         % visualization
         h = plot(this, varargin);
