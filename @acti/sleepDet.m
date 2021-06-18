@@ -1,14 +1,17 @@
 function this = sleepDet(this)
 %SLEEPDET Perform sleep detection on an ACTI object
 % 
-% $Author: Peng Li
-% $Date:   Dec 02, 2020
+% $Author:  Peng Li
+% $Date:    Dec 02, 2020
+% $Modif.:  May 17, 2021
+%               generate window from doMask2 instead of recalculate based
+%               on mask series
 % 
 
 % time restrition mask
-mask = doMask2(length(this.Data), this.Epoch, this.TimeInfo.StartDate, ...
+[mask, wind] = doMask2(length(this.Data), this.Epoch, this.TimeInfo.StartDate, ...
     this.SleepInfo.StartTime, this.SleepInfo.EndTime);
-this.SleepSummary.Window = detConstantOne(mask);
+this.SleepSummary.Window = wind;
 
 % sleep detection
 sleepSeries = doSleepDet2(this.Data, this.Epoch, ...
