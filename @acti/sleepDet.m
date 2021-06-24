@@ -49,14 +49,14 @@ this.Sleep       = detConstantOne(this.SleepSeries);
 % analyzing the results if too many gaps
 % 
 
-duration_gap_out = sum(this.SleepSeries & ~this.GapSeries) / length(this.Data) * 24;
+duration_gap_out = sum(this.SleepSeries & ~this.GapSeries) / (length(this.Data) - sum(this.GapSeries)) * 24;
 duration         = sum(this.SleepSeries)                   / length(this.Data) * 24;
 
 validtim = sum(diff([0; this.SleepSeries & ~this.GapSeries]) == 1)-1;
 if validtim < 0
     validtim = nan;
 end
-awake_gap_out = validtim / (length(this.Data) * this.Epoch / 3600 / 24);
+awake_gap_out = validtim / ((length(this.Data)  - sum(this.GapSeries)) * this.Epoch / 3600 / 24);
 
 validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
 if validtim < 0
