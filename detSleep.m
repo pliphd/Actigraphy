@@ -11,6 +11,9 @@ function [sleep, res, fmt] = detSleep(actigraphy, epoch, varargin)
 %   $Date:      Dec 3, 2020
 %   $Modif.:    Apr 22, 2021
 %                   restricted to at least 2 days of data
+%               Jun 24, 2021
+%                   adapt results and format to changes in summary sleep
+%                   statics changes
 % 
 
 % to be modified
@@ -36,7 +39,7 @@ if length(actigraphy)*epoch / 3600 / 24 >= 2
     % request summary results here
     res = a.SleepSummary.Report{:, :};
 else
-    sleep = [nan nan];
-    res   = [nan nan];
+    sleep = [nan nan nan nan];
+    res   = [nan nan nan nan];
 end
-fmt = '%.2f\t%.2f\r';
+fmt = '%f\t%f\t%f\t%f\r';
