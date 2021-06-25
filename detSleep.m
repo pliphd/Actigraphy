@@ -39,7 +39,7 @@ if length(actigraphy)*epoch / 3600 / 24 >= 2
     % request summary results here
     res = a.SleepSummary.Report{:, :};
 else
-    sleep = [nan nan nan nan];
-    res   = [nan nan nan nan];
+    sleep = [nan nan];
+    res   = [nan nan];
 end
-fmt = '%f\t%f\t%f\t%f\r';
+fmt = '%f\t%f\r';

@@ -8,15 +8,19 @@ function this = sleepDet(this)
 %               on mask series
 %           Jun 24, 2021
 %               see comments below for summary statics
-% 
+%           Jun 25, 2021
+%               nan gap epochs
+
+x = this.Data;
+x(this.GapSeries) = nan;
 
 % time restrition mask
-[mask, wind] = doMask2(length(this.Data), this.Epoch, this.TimeInfo.StartDate, ...
+[mask, wind] = doMask2(length(x), this.Epoch, this.TimeInfo.StartDate, ...
     this.SleepInfo.StartTime, this.SleepInfo.EndTime);
 this.SleepSummary.Window = wind;
 
 % sleep detection
-sleepSeries = doSleepDet2(this.Data, this.Epoch, ...
+sleepSeries = doSleepDet2(x, this.Epoch, ...
     this.SleepInfo.ModeParameter.V, ...
     this.SleepInfo.ModeParameter.P, ...
     this.SleepInfo.ModeParameter.C);
@@ -49,23 +53,15 @@ this.Sleep       = detConstantOne(this.SleepSeries);
 % analyzing the results if too many gaps
 % 
 
-duration_gap_out = sum(this.SleepSeries & ~this.GapSeries) / (length(this.Data) - sum(this.GapSeries)) * 24;
-duration         = sum(this.SleepSeries)                   / length(this.Data) * 24;
-
-validtim = sum(diff([0; this.SleepSeries & ~this.GapSeries]) == 1)-1;
-if validtim < 0
-    validtim = nan;
-end
-awake_gap_out = validtim / ((length(this.Data)  - sum(this.GapSeries)) * this.Epoch / 3600 / 24);
-
+duration = sum(this.SleepSeries) / (length(x) - sum(this.GapSeries)) * 24;
 validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
 if validtim < 0
     validtim = nan;
 end
-awake = validtim / (length(this.Data) * this.Epoch / 3600 / 24);
+awake = validtim / ((length(x) - sum(this.GapSeries)) * this.Epoch / 3600 / 24);
 
-this.SleepSummary.Report = table(duration_gap_out,awake_gap_out, duration, awake, ...
-    'VariableNames', {'sleep_duration_gap_out_avg', 'times_awake_gap_out_avg', 'sleep_duration_avg', 'times_awake_avg'});
+this.SleepSummary.Report = table(duration, awake, ...
+    'VariableNames', {'sleep_duration_avg', 'times_awake_avg'});
 end
 
 % function out = sleepSum(window, sleepSeries, gapSeries, epoch)
