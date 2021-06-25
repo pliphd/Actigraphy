@@ -90,6 +90,11 @@ else
     [l5, t5]   = min(hourlyMean);
     t5m = index5(t5)*this.Epoch/3600;
     
+    if isempty(m10),  m10  = nan; end
+    if isempty(t10m), t10m = nan; end
+    if isempty(l5),   l5   = nan; end
+    if isempty(t5m),  t5m  = nan; end
+    
     this.M10L5Summary = table(m10, t10m, l5, t5m, 'VariableNames', {'m10', 'm10_mid_time', 'l5', 'l5_mid_time'});
 end
 end
