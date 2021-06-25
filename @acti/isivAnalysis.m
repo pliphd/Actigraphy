@@ -11,6 +11,11 @@ cycle  = this.ISIVInfo.FixedCycles;
 x      = this.Data;
 x(this.GapSeries) = nan;
 
+% init
+defVal = nan(numel(this.ISIVInfo.TimeScaleInMin), 1);
+this.ISIVSummary = table(defVal, defVal, defVal, defVal, defVal, defVal, ...
+    'VariableNames', {'is', 'iv', 'current_period', 'perc_missing_data', 'perc_missing_bin', 'timescale'});
+
 nonparaTbl = cell(numel(this.ISIVInfo.TimeScaleInMin), 1);
 for iT = 1:numel(this.ISIVInfo.TimeScaleInMin)
     scale  = this.ISIVInfo.TimeScaleInMin(iT);
@@ -24,4 +29,7 @@ for iT = 1:numel(this.ISIVInfo.TimeScaleInMin)
     
     nonparaTbl{iT} = tbl;
 end
-this.ISIVSummary = vertcat(nonparaTbl{:});
+
+if ~isempty(vertcat(nonparaTbl{:}))
+    this.ISIVSummary = vertcat(nonparaTbl{:});
+end
