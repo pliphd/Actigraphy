@@ -57,12 +57,7 @@ else
     xBuffer10  = xBuffer10(:, startInd:endInd);
     index10    = 1:size(xBuffer10, 2);
     
-    % if 50% more nan, remove the vector
-    indNan     = nansum(isnan(xBuffer10), 1)/size(xBuffer10, 1) > 0.5;
-    xBuffer10(:, indNan) = [];
-    index10(indNan)      = [];
-    
-    hourlyMean = nansum(xBuffer10, 1)/10;
+    hourlyMean = nanmean(xBuffer10, 1) * (10*3600/this.Epoch);
     [m10, t10] = max(hourlyMean);
     t10m = index10(t10)*this.Epoch/3600;
     
@@ -81,12 +76,7 @@ else
     xBuffer5   = xBuffer5(:, startInd:endInd);
     index5     = 1:size(xBuffer5, 2);
     
-    % if 50% more nan, remove the vector
-    indNan     = nansum(isnan(xBuffer5), 1)/size(xBuffer5, 1) > 0.5;
-    xBuffer5(:, indNan) = [];
-    index5(indNan)      = [];
-    
-    hourlyMean = nansum(xBuffer5, 1)/5;
+    hourlyMean = nanmean(xBuffer5, 1) * (5*3600/this.Epoch);
     [l5, t5]   = min(hourlyMean);
     t5m = index5(t5)*this.Epoch/3600;
     
