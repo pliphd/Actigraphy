@@ -11,8 +11,12 @@ function this = m10l5Analysis(this)
 x      = this.Data;
 x(this.GapSeries) = nan;
 
+m10 = nan; t10m = nan;
+l5  = nan; t5m  = nan;
+
 if ~this.timeSet
-    error('nonparametric:M10L5:actual time is required to perform M10 and L5');
+    this.M10L5Summary = table(m10, t10m, l5, t5m, 'VariableNames', {'m10', 'm10_mid_time', 'l5', 'l5_mid_time'});
+    % error('nonparametric:M10L5:actual time is required to perform M10 and L5');
 else
     missingHDuration = this.TimeInfo.StartDate - datetime(year(this.TimeInfo.StartDate), month(this.TimeInfo.StartDate), day(this.TimeInfo.StartDate));
     
