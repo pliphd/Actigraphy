@@ -86,9 +86,7 @@ else
     [l5, t5]   = min(hourlyMean);
     t5m = index5(t5)*this.Epoch/3600;
     
-    out = [m10, t10m, l5, t5m];
-    
-    this.M10L5Summary = array2table(out, 'VariableNames', {'m10', 'm10_mid_time', 'l5', 'l5_mid_time'});
+    this.M10L5Summary = table(m10, t10m, l5, t5m, 'VariableNames', {'m10', 'm10_mid_time', 'l5', 'l5_mid_time'});
 end
 end
 
