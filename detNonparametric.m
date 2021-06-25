@@ -27,4 +27,4 @@ a = a.m10l5Analysis;
 % request summary results here
 res = [a.ISIVSummary{:, :} a.M10L5Summary{:, :}];
 
-fmt = '%.2f\t%.2f\t%d\t%.2f\t%.2f\t%d\t%.2f\t%.2f\t%.2f\t%.2f\r';
+fmt = '%f\t%f\t%d\t%f\t%f\t%d\t%f\t%f\t%f\t%f\r';
