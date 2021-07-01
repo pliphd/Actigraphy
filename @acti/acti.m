@@ -24,6 +24,7 @@ classdef acti < timeseries
         SleepSummary
         ISIVSummary
         M10L5Summary
+        CosinorSummary
     end
     properties (SetAccess = protected, Hidden = true)
         Gap_
@@ -31,6 +32,7 @@ classdef acti < timeseries
         SleepSummary_
         ISIVSummary_
         M10L5Summary_
+        CosinorSummary_
     end
     
     properties
@@ -39,6 +41,8 @@ classdef acti < timeseries
             'ModeParameter', struct('P', [], 'V', [], 'C', []))
         
         ISIVInfo = struct('TimeScaleInMin', [], 'PeriodInHour', [], 'FixedCycles', [])
+        
+        CosinorInfo = struct('HarmonicsInHour', [], 'MinimumLengthInDays', []);
     end
     
     properties (Dependent = true, Hidden = true)
@@ -148,6 +152,13 @@ classdef acti < timeseries
         function val = get.M10L5Summary(this)
             val = this.M10L5Summary_;
         end
+        
+        function this = set.CosinorSummary(this, val)
+            this.CosinorSummary_ = val;
+        end
+        function val = get.CosinorSummary(this)
+            val = this.CosinorSummary_;
+        end
     end
     
     %% methods -- declaration only
@@ -157,6 +168,7 @@ classdef acti < timeseries
         this = sleepDet(this);
         this = isivAnalysis(this);
         this = m10l5Analysis(this);
+        this = cosinorAnalysis(this);
         
         % visualization
         h = plot(this, varargin);
