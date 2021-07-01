@@ -72,6 +72,10 @@ if nargin > 5
     if isfield(option, 'isivInfo')
         isivInfo = option.isivInfo;
     end
+    
+    if isfield(option, 'cosinorInfo')
+        cosinorInfo = option.cosinorInfo;
+    end
 end
 
 switch process
@@ -89,6 +93,8 @@ switch process
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, cyclen, filename, starttime, destination, quality);
     case 'detNonparametric'
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, starttime, quality, isivInfo);
+    case 'detCosinor'
+        [res, fmt]         = feval(process, actigraphy(:, 1), epoch, starttime, quality, cosinorInfo);
 end
 
 switch process
@@ -106,6 +112,6 @@ switch process
         for iR = 1:size(res, 1)
             fprintf(fid, ['%s\t' fmt], filename, res(iR, :));
         end
-    case {'detUPMEMD', 'detNonparametric'}
+    case {'detUPMEMD', 'detNonparametric', 'detCosinor'}
         fprintf(fid, ['%s\t' fmt], filename, res);
 end
