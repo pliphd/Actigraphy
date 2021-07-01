@@ -43,6 +43,7 @@ tInSec = tInDegree * 3600 / 15;
 amp = component.AC;
 pha = component.theta;
 p_h = component.theta ./ 15;
+p_h = p_h(:)';
 p_h(p_h < 0) = p_h(p_h < 0) + component.FitFreq(p_h < 0);
 
 mesor         = component.const;
@@ -50,4 +51,4 @@ mesor         = component.const;
 this.CosinorSummary = [table(mean_activity, std_activity, mesor, p_value, r_squared) ...
     array2table(amp', 'VariableNames', "amplitude_" + string(period)) ...
     array2table(pha', 'VariableNames', "phase_" + string(period)) ...
-    array2table(p_h', 'VariableNames', "phase_" + string(period) + "_in_hour")];
+    array2table(p_h,  'VariableNames', "phase_" + string(period) + "_in_hour")];
