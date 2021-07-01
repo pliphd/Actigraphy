@@ -25,5 +25,5 @@ a = a.cosinorAnalysis;
 % request summary results here
 res = a.CosinorSummary{:, :};
 
-tmp_fmt = repmat('%f\t', 1, width(res));
+tmp_fmt = repmat('%f\t', 1, size(res, 2));
 fmt = [tmp_fmt(1:end-1) 'n'];
