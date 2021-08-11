@@ -27,4 +27,4 @@ else
 end
 
 res = [aLenInDay, gapPerc];
-fmt = '%d\t%.2f\r';
+fmt = '%d\t%.2f\n';

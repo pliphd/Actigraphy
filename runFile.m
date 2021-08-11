@@ -101,7 +101,7 @@ switch process
     case {'detGap', 'calGap', 'detSleep'}
         if ~(isempty(toFile))
             fin = fopen(writeFile, 'w');
-            fprintf(fin, '%d\t%d\r', toFile');
+            fprintf(fin, '%d\t%d\n', toFile');
             fclose(fin);
         end
         
