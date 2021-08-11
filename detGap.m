@@ -11,7 +11,7 @@ minDuration = 60 / epoch * 60 * 2;
 gapseries   = actigraphy <= 0;
 
 if any(gapseries)
-    gap = DetConstantOne(gapseries);
+    gap = detConstantOne(gapseries);
     gap(gap(:, 2) - gap(:, 1) < minDuration, :) = [];
 else
     gap = [];
