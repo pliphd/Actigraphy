@@ -34,7 +34,7 @@ end
 
 parfor idx = 1:numel(allFiles)
     curFile = fullfile(source, allFiles(idx).name);
-    runFile('calGap', curFile, destination, epoch, c.Value);
+    runFile('detGap', curFile, destination, epoch, c.Value);
     
     send(q, idx);
 end
