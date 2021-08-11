@@ -8,7 +8,7 @@ function parGapDetection(source, destination, epoch)
 %   $Author:    Peng Li
 %
 
-allFiles = dir(fullfile(source, '*.txt'));
+allFiles = dir(fullfile(source, '*epoch15.txt'));
 
 fprintf('==\tGAP DETECTION\r');
 fprintf('==\t%d files to process\r', numel(allFiles));
