@@ -58,4 +58,4 @@ if ~isempty(theDFA.fitResult)
 else
     res = [nan nan nan nan nan];
 end
-fmt = '%.2f\t%.2f\t%f\t%f\t%f\r';
+fmt = '%.2f\t%.2f\t%f\t%f\t%f\n';
