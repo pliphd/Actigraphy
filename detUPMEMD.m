@@ -69,7 +69,7 @@ else
         'FileType', 'text');
 end
 
-fmt = '%f\t%f\t%f\t%f\t%f\t%f\t%f\r';
+fmt = '%f\t%f\t%f\t%f\t%f\t%f\t%f\n';
 
 %% below back up for fixed length analysis
 % % fixed length
