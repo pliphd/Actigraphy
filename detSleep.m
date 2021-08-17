@@ -42,4 +42,4 @@ else
     sleep = [nan nan];
     res   = [nan nan];
 end
-fmt = '%f\t%f\r';
+fmt = '%f\t%f\n';
