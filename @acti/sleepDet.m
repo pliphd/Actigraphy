@@ -52,13 +52,15 @@ this.Sleep       = detConstantOne(this.SleepSeries);
 % take gaps out of sleep episodes, and leave exclusion later when
 % analyzing the results if too many gaps
 % 
-
-duration = sum(this.SleepSeries) / (length(x) - sum(this.GapSeries)) * 24;
+% modif. 2021/09/30
+%   scale to the actual length of time window for sleep detection, instead
+%   of 24 hour
+duration = sum(this.SleepSeries) / (length(x) - sum(this.GapSeries)) * hours(this.SleepInfo.EndTime - this.SleepInfo.StartTime);
 validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
 if validtim < 0
     validtim = nan;
 end
-awake = validtim / ((length(x) - sum(this.GapSeries)) * this.Epoch / 3600 / 24);
+awake = validtim / ((length(x) - sum(this.GapSeries)) * this.Epoch / 3600 / hours(this.SleepInfo.EndTime - this.SleepInfo.StartTime));
 
 this.SleepSummary.Report = table(duration, awake, ...
     'VariableNames', {'sleep_duration_avg', 'times_awake_avg'});
