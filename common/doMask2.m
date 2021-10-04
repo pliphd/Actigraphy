@@ -1,4 +1,4 @@
-function [maskSeries, maskWindow] = doMask2(dataLength, epochInSec, dataStartTime, maskStartTimestr, maskEndTimestr)
+function [maskSeries, maskWindow, maskLength] = doMask2(dataLength, epochInSec, dataStartTime, maskStartTimestr, maskEndTimestr)
 %DOMASK2 generate masking series based on start and end time
 % 
 % $Author:  Peng Li
@@ -7,6 +7,8 @@ function [maskSeries, maskWindow] = doMask2(dataLength, epochInSec, dataStartTim
 %               relocation
 %           May 17, 2021
 %               output maskWindow for use in next step
+%           Oct 04, 2021
+%               output maskLength in hour for using in next step
 % 
 
 totalDays = ceil(dataLength .* epochInSec ./ 3600 ./ 24);
@@ -21,6 +23,8 @@ dayEnd       = datetime(year(dataStartTime), month(dataStartTime), day(dataStart
 if dayEnd < dayStart % cross days
     dayEnd = dayEnd + 1;
 end
+
+maskLength = hours(dayEnd - dayStart);
 
 days = [dayStart + (0:totalDays)', dayEnd + (0:totalDays)'];
 days(days(:, 1) <= dataStartTime, 1) = dataStartTime;

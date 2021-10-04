@@ -15,7 +15,7 @@ x = this.Data;
 x(this.GapSeries) = nan;
 
 % time restrition mask
-[mask, wind] = doMask2(length(x), this.Epoch, this.TimeInfo.StartDate, ...
+[mask, wind, maskLength] = doMask2(length(x), this.Epoch, this.TimeInfo.StartDate, ...
     this.SleepInfo.StartTime, this.SleepInfo.EndTime);
 this.SleepSummary.Window = wind;
 
@@ -55,12 +55,12 @@ this.Sleep       = detConstantOne(this.SleepSeries);
 % modif. 2021/09/30
 %   scale to the actual length of time window for sleep detection, instead
 %   of 24 hour
-duration = sum(this.SleepSeries) / (length(x) - sum(this.GapSeries)) * hours(this.SleepInfo.EndTime - this.SleepInfo.StartTime);
+duration = sum(this.SleepSeries) / (length(x) - sum(this.GapSeries)) * maskLength;
 validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
 if validtim < 0
     validtim = nan;
 end
-awake = validtim / ((length(x) - sum(this.GapSeries)) * this.Epoch / 3600 / hours(this.SleepInfo.EndTime - this.SleepInfo.StartTime));
+awake = validtim / ((length(x) - sum(this.GapSeries)) * this.Epoch / 3600 / maskLength);
 
 this.SleepSummary.Report = table(duration, awake, ...
     'VariableNames', {'sleep_duration_avg', 'times_awake_avg'});
