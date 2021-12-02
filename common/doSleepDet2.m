@@ -129,10 +129,11 @@ wakeSeriesFinal  = wakeSeriesOrig | wakeSeriesAfterA | ...
 
 wakeEpi = detConstantOne(wakeSeriesFinal);
 
-%% wake interval post arousal: 3 min as the criterion
+% 2021-12-02 disable the following criterion
+% %% wake interval post arousal: 3 min as the criterion
+% merg    = wakeEpi(:, 2) - wakeEpi(:, 1) <= 3;
+% wakeEpi(merg, :) = [];
 
-merg    = wakeEpi(:, 2) - wakeEpi(:, 1) <= 3;
-wakeEpi(merg, :) = [];
 sleepEpi = transSegGap(wakeEpi, length(sleepSeries));
 
 % %% potential off-wrist episodes

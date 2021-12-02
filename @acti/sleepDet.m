@@ -11,11 +11,12 @@ function this = sleepDet(this)
 %           Jun 25, 2021
 %               nan gap epochs
 
-x = this.Data;
+x   = this.Data;
+len = length(x);
 x(this.GapSeries) = nan;
 
 % time restrition mask
-[mask, wind, maskLength] = doMask2(length(x), this.Epoch, this.TimeInfo.StartDate, ...
+[mask, wind, maskLength] = doMask2(len, this.Epoch, this.TimeInfo.StartDate, ...
     this.SleepInfo.StartTime, this.SleepInfo.EndTime);
 this.SleepSummary.Window = wind;
 
@@ -55,15 +56,41 @@ this.Sleep       = detConstantOne(this.SleepSeries);
 % modif. 2021/09/30
 %   scale to the actual length of time window for sleep detection, instead
 %   of 24 hour
-duration = sum(this.SleepSeries) / (length(x) - sum(this.GapSeries)) * maskLength;
-validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
-if validtim < 0
-    validtim = nan;
-end
-awake = validtim / ((length(x) - sum(this.GapSeries)) * this.Epoch / 3600 / maskLength);
+duration = sum(this.SleepSeries) / (len - sum(this.GapSeries)) * maskLength;
 
-this.SleepSummary.Report = table(duration, awake, ...
-    'VariableNames', {'sleep_duration_avg', 'times_awake_avg'});
+% validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
+% if validtim < 0
+%     validtim = nan;
+% end
+% awake = validtim / ((len - sum(this.GapSeries)) * this.Epoch / 3600 / maskLength);
+
+awakeEpi = transSegGap(this.Sleep, len);
+
+% 2021-12-02
+% old criterion applied here: if < 3 min, treat as belonging to the same
+% sleep (when calculate sleep frequency), but although short interval, this
+% should be included in calculating awake time and waso
+awakeEpi3 = awakeEpi;
+merg      = awakeEpi3(:, 2) - awakeEpi3(:, 1) <= 3;
+awakeEpi3(merg, :) = [];
+sleepFreq = (size(awakeEpi3, 1) + 1) / (len - sum(this.GapSeries)) * maskLength * 3600 / this.Epoch;
+
+% re-estimate times awake and waso
+% if > 10 min, suspect to be fully awake and not awake temperally in sleep
+% 2021-12-01
+awakeEpi((awakeEpi(:, 2) - awakeEpi(:, 1)) * this.Epoch / 60 > 10, :) = [];
+
+if ~isempty(awakeEpi)
+    awake = size(awakeEpi, 1) / (len - sum(this.GapSeries)) * maskLength * 3600 / this.Epoch;
+    awakeSeries = seg2Series(awakeEpi, len);
+    waso = sum(awakeSeries) / (len - sum(this.GapSeries)) * maskLength * 60;
+else
+    awake = 0;
+    waso  = 0;
+end
+
+this.SleepSummary.Report = table(duration, sleepFreq, awake, waso, ...
+    'VariableNames', {'sleep_duration_avg', 'sleep_frequency_avg', 'times_awake_avg', 'waso_avg_in_min'});
 end
 
 % function out = sleepSum(window, sleepSeries, gapSeries, epoch)

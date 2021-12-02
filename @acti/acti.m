@@ -172,6 +172,7 @@ classdef acti < timeseries
         
         % visualization
         h = plot(this, varargin);
+        h = plotActogram(this, varargin);
     end
 end
 
