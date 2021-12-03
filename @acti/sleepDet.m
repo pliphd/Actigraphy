@@ -76,9 +76,9 @@ awakeEpi3(merg, :) = [];
 sleepFreq = (size(awakeEpi3, 1) + 1) / (len - sum(this.GapSeries)) * maskLength * 3600 / this.Epoch;
 
 % re-estimate times awake and waso
-% if > 10 min, suspect to be fully awake and not awake temperally in sleep
-% 2021-12-01
-awakeEpi((awakeEpi(:, 2) - awakeEpi(:, 1)) * this.Epoch / 60 > 10, :) = [];
+% if > 60 min, suspect to be fully awake and not awake temperally in sleep
+% 2021-12-03
+awakeEpi((awakeEpi(:, 2) - awakeEpi(:, 1)) * this.Epoch / 60 > 60, :) = [];
 
 if ~isempty(awakeEpi)
     awake = size(awakeEpi, 1) / (len - sum(this.GapSeries)) * maskLength * 3600 / this.Epoch;
