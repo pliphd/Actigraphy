@@ -56,7 +56,11 @@ this.Sleep       = detConstantOne(this.SleepSeries);
 % modif. 2021/09/30
 %   scale to the actual length of time window for sleep detection, instead
 %   of 24 hour
-duration = sum(this.SleepSeries) / (len - sum(this.GapSeries)) * maskLength;
+% modif. 2021/12/08
+%   it is INCORRECT to scale it to the actual windwo length, since the
+%   SleepSeries is already masked. The duration should still be scaled to
+%   24 h
+duration = sum(this.SleepSeries) / (len - sum(this.GapSeries)) * 24;
 
 % validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
 % if validtim < 0
@@ -73,7 +77,7 @@ awakeEpi = transSegGap(this.Sleep, len);
 awakeEpi3 = awakeEpi;
 merg      = awakeEpi3(:, 2) - awakeEpi3(:, 1) <= 3;
 awakeEpi3(merg, :) = [];
-sleepFreq = (size(awakeEpi3, 1) + 1) / (len - sum(this.GapSeries)) * maskLength * 3600 / this.Epoch;
+sleepFreq = (size(awakeEpi3, 1) + 1) / (len - sum(this.GapSeries)) * 24 * 3600 / this.Epoch;
 
 % re-estimate times awake and waso
 % if > 60 min, suspect to be fully awake and not awake temperally in sleep
@@ -81,9 +85,9 @@ sleepFreq = (size(awakeEpi3, 1) + 1) / (len - sum(this.GapSeries)) * maskLength 
 awakeEpi((awakeEpi(:, 2) - awakeEpi(:, 1)) * this.Epoch / 60 > 60, :) = [];
 
 if ~isempty(awakeEpi)
-    awake = size(awakeEpi, 1) / (len - sum(this.GapSeries)) * maskLength * 3600 / this.Epoch;
+    awake = size(awakeEpi, 1) / (len - sum(this.GapSeries)) * 24 * 3600 / this.Epoch;
     awakeSeries = seg2Series(awakeEpi, len);
-    waso = sum(awakeSeries) / (len - sum(this.GapSeries)) * maskLength * 60;
+    waso = sum(awakeSeries) / (len - sum(this.GapSeries)) * 24 * 60;
 else
     awake = 0;
     waso  = 0;

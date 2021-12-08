@@ -11,7 +11,7 @@ function parSleepDetection(source, destination, epoch, option)
 %
 
 % to amend, including name patterns as input
-allFiles = dir(fullfile(source, '*epoch15.txt'));
+allFiles = dir(fullfile(source, '*.txt'));
 
 fprintf('==\tSLEEP DETECTION\r');
 fprintf('==\t%d files to process\r', numel(allFiles));
