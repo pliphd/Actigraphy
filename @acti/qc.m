@@ -13,15 +13,20 @@ qcMessage = "";
 [~, ind] = doMask2(len, this.Epoch, this.TimeInfo.StartDate, ...
     '21:00', '7:00');
 
-maxZeroSeg = splitapply(@(x) contZero(this.Data, x, this.Epoch), ind, (1:size(ind, 1))');
-
-offWristPortion = maxZeroSeg ./ (10*3600/this.Epoch);
-
-if sum(offWristPortion > 0.5) / numel(offWristPortion) > 0.5
-    offWristFlag   = 1;
-    qcMessage      = qcMessage + "off-wrist during nighttime; ";
+if isempty(ind)
+    offWristFlag = 1;
+    qcMessage    = qcMessage + "recording too short (likely no nighttime data); ";
 else
-    offWristFlag   = 0;
+    maxZeroSeg   = splitapply(@(x) contZero(this.Data, x, this.Epoch), ind, (1:size(ind, 1))');
+
+    offWristPortion = maxZeroSeg ./ (10*3600/this.Epoch);
+
+    if sum(offWristPortion > 0.5) / numel(offWristPortion) > 0.5
+        offWristFlag   = 1;
+        qcMessage      = qcMessage + "off-wrist during nighttime; ";
+    else
+        offWristFlag   = 0;
+    end
 end
 
 %% 2: failure days senario 1
