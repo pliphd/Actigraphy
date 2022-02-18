@@ -43,6 +43,8 @@ classdef acti < timeseries
         ISIVInfo = struct('TimeScaleInMin', [], 'PeriodInHour', [], 'FixedCycles', [])
         
         CosinorInfo = struct('HarmonicsInHour', [], 'MinimumLengthInDays', []);
+
+        QCimpression = struct('pass', nan, 'message', '');
     end
     
     properties (Dependent = true, Hidden = true)
@@ -163,6 +165,9 @@ classdef acti < timeseries
     
     %% methods -- declaration only
     methods
+        % pre-processing
+        this = qc(this);
+
         % processing
         this = gapDet(this);
         this = sleepDet(this);
