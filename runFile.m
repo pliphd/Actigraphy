@@ -95,6 +95,8 @@ switch process
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, starttime, quality, isivInfo);
     case 'detCosinor'
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, starttime, quality, cosinorInfo);
+    case 'detQC'
+        [res, fmt]         = feval(process, actigraphy(:, 1), epoch, starttime);
 end
 
 switch process
@@ -114,4 +116,6 @@ switch process
         end
     case {'detUPMEMD', 'detNonparametric', 'detCosinor'}
         fprintf(fid, ['%s\t' fmt], filename, res);
+    case 'detQC'
+        fprintf(fid, ['%s\t' fmt], filename, res.pass, res.message);
 end
