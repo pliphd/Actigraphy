@@ -24,5 +24,5 @@ ta = table(actualWindow(:, 1), actualWindow(:, 2), totalActivity, ...
 end
 
 function mta = windMean(actigraphy, window)
-mta = nanmean(actigraphy(window(1):window(2)));
+mta = mean(actigraphy(window(1):window(2)), 'omitnan');
 end
