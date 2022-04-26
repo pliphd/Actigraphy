@@ -2,7 +2,7 @@ function [res, fmt] = detUPMEMD(actigraphy, epoch, varargin)
 %DETUPMEMD do uniform phase masked empirical mode decomposition and calculate
 % circadian metrics
 %   
-%   [RES, FMT] = DETUPMEMD(ACTIGRAPHY, EPOCH, CYCLELENGTH, FILENAME, STARTTIME, FILEPATH, QUALITY)
+%   [RES, FMT] = DETUPMEMD(ACTIGRAPHY, EPOCH, CYCLELENGTH, FILENAME, STARTTIME, FILEPATH, QUALITY, MINCYCLE)
 %       performs uniform phase masked empirical mode decomposition on ACTIGRAPHY
 %       of epoch length EPOCH second with target cycle length CYCLELENGTH h.
 %       RES stores results amp (mean, sd), cycle length (mean, sd), and
@@ -13,11 +13,19 @@ function [res, fmt] = detUPMEMD(actigraphy, epoch, varargin)
 % 
 
 % to be modified
-narginchk(7, 7);
+narginchk(7, 8);
 
 cyclelen   = varargin{1};
 filename   = varargin{2};
 filepath   = varargin{4};
+
+% Apr. 26, 2022
+% add minCycles as a parameter
+if nargin == 8
+    minCycle = varargin{6};
+else
+    minCycle = 6; % in order to adapt previous versions
+end
 
 %% using fixed number of cycles
 startTime  = datenum(varargin{3});
@@ -39,23 +47,31 @@ imf   = upmemd(actigraphy', sampf, fc); % need a row vector as first input
 [cycleStart, cycleLength, cycleAmplitude] = ...
     IMFCycleFA(imf(end, :), sampf);
 
-% if at least 6 cycles
-if numel(cycleStart) < 6
+% if at least minCycle cycles
+if all(isnan(cycleStart)) || numel(cycleStart) < minCycle
     res = [nan nan nan nan nan nan nan];
 else
+    % Apr 26, 2022
+    % when minCycle == 1, use all available results
+    if minCycle == 1
+        cycleN   = numel(cycleStart);
+    else
+        cycleN   = minCycle;
+    end
+
     % request output
-    meanAmplitude = nanmean(cycleAmplitude(1:6));
-    sdAmplitude   = nanstd(cycleAmplitude(1:6));
+    meanAmplitude = mean(cycleAmplitude(1:cycleN), 'omitnan');
+    sdAmplitude   = std(cycleAmplitude(1:cycleN), 'omitnan');
     
-    meanPeriod    = nanmean(cycleLength(1:6));
-    sdPeriod      = nanstd(cycleLength(1:6));
+    meanPeriod    = mean(cycleLength(1:cycleN), 'omitnan');
+    sdPeriod      = std(cycleLength(1:cycleN), 'omitnan');
     
     peakTime      = datetime(t(cycleStart), 'ConvertFrom', 'datenum');
     phaseInHour   = hour(peakTime) + minute(peakTime)/60 + second(peakTime)/3600;
-    meanPhase     = nanmean(phaseInHour);
-    sdPhase       = nanstd(phaseInHour);
+    meanPhase     = mean(phaseInHour, 'omitnan');
+    sdPhase       = std(phaseInHour, 'omitnan');
     
-    cycle6SD      = std(actigraphy(1:ceil(sum(cycleLength(1:6))*3600/epoch)));
+    cycle6SD      = std(actigraphy(1:ceil(sum(cycleLength(1:cycleN))*3600/epoch)));
     
     res = [meanAmplitude, sdAmplitude, meanPeriod, sdPeriod, meanPhase, sdPhase, cycle6SD];
     
