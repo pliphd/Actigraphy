@@ -76,6 +76,10 @@ if nargin > 5
     if isfield(option, 'cosinorInfo')
         cosinorInfo = option.cosinorInfo;
     end
+
+    if isfield(option, 'minCycle')
+        minCycle = option.minCycle;
+    end
 end
 
 switch process
@@ -90,7 +94,7 @@ switch process
     case 'detSleep'
         [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, starttime, quality, window, parameter);
     case 'detUPMEMD'
-        [res, fmt]         = feval(process, actigraphy(:, 1), epoch, cyclen, filename, starttime, destination, quality);
+        [res, fmt]         = feval(process, actigraphy(:, 1), epoch, cyclen, filename, starttime, destination, quality, minCycle);
     case 'detNonparametric'
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, starttime, quality, isivInfo);
     case 'detCosinor'
