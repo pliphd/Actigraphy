@@ -42,7 +42,7 @@ classdef acti < timeseries
         
         ISIVInfo = struct('TimeScaleInMin', [], 'PeriodInHour', [], 'FixedCycles', [])
         
-        CosinorInfo = struct('HarmonicsInHour', [], 'MinimumLengthInDays', []);
+        CosinorInfo = struct('HarmonicsInHour', [], 'MinimumLengthInDays', [], 'CIAlpha', 0.05, 'UserData', []);
 
         QCimpression = struct('pass', nan, 'message', '');
     end
@@ -77,7 +77,7 @@ classdef acti < timeseries
             % redefine TIME property
             this.Time  = (0:length(this.Data)-1) .* epoch;
             this.TimeInfo.StartDate = startTime;
-            if ~isempty(startTime)
+            if ~isempty(startTime) && ~isnat(startTime)
                 this.timeSet = 1;
             end
             
@@ -174,6 +174,7 @@ classdef acti < timeseries
         this = isivAnalysis(this);
         this = m10l5Analysis(this);
         this = cosinorAnalysis(this);
+        this = cosinorActi(this);
         
         % visualization
         h = plot(this, varargin);
