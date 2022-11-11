@@ -1,3 +1,10 @@
 # design files
 *.psd
 
+# updates temporarily ignore
+ezActi2/
+@cosinor/
+@acti/plotActogram.m
+@acti/qc.m
+
+
