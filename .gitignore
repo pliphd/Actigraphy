@@ -1,10 +1,14 @@
 # design files
 *.psd
+appDesigner*/
+
 
 # updates temporarily ignore
 ezActi2/
 @cosinor/
 @acti/plotActogram.m
 @acti/qc.m
+@actogram/
+rhythm/isiv.m
 
 
