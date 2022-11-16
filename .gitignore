@@ -1,6 +1,7 @@
 # design files
 *.psd
 appDesigner*/
+*.asv
 
 
 # updates temporarily ignore
