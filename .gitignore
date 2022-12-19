@@ -2,6 +2,7 @@
 *.psd
 appDesigner*/
 *.asv
+test/
 
 
 # updates temporarily ignore
