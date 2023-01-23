@@ -148,9 +148,19 @@ classdef dfaConfig < handle
     
     methods (Access = private)
         function app = autoButtonCallback(app, source, event)
-            while app.hostApp.startIndex <= length(app.hostApp.fileList)
+            while 1
                 app.runButtonCallback;
                 drawnow;
+
+                % move on
+                app.hostApp.startIndex = app.hostApp.startIndex + 1;
+                if app.hostApp.startIndex > length(app.hostApp.fileList)
+                    app.hostApp.statusFeed_("DFA: finished the last file (" + app.hostApp.currentFileName + "!");
+
+                    % return pointer
+                    app.hostApp.startIndex = app.hostApp.startIndex - 1;
+                    return;
+                end
             end
             
         end
@@ -163,11 +173,9 @@ classdef dfaConfig < handle
             
             app.hostApp.loadData;
             
-            if app.hostApp.startIndex > length(app.hostApp.fileList)
-                return;
+            if app.hostApp.importedGap
+                app.hostApp.loadGap;
             end
-            
-            app.hostApp.loadGap;
             
             % time series
             if app.hostApp.timeSet
@@ -210,9 +218,9 @@ classdef dfaConfig < handle
             else
                 theDFA.save('outdir', fullfile(app.hostApp.filePath, 'NumResults'), 'option', 'fit');
             end
-            
-            % move on
-            app.hostApp.startIndex = app.hostApp.startIndex + 1;
+
+            % propogate message
+            app.hostApp.statusFeed_("DFA: " + app.hostApp.currentFileName + " done!");
         end
         
         function app = typeDropCallback(app, source, event)
