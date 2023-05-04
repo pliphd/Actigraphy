@@ -4,6 +4,7 @@ appDesigner*/
 *.asv
 test/
 test_*.m
+acc2counts/
 
 # updates temporarily ignore
 ezActi2/

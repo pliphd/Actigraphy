@@ -35,7 +35,7 @@ spmd
 end
 
 parfor idx = 1:numel(allFiles)
-    curFile = fullfile(source, allFiles(idx).name);
+    curFile = fullfile(source, 'UPMEMD/upmemd', allFiles(idx).name);
     runFile('detUPMEMDperCycle', curFile, destination, epoch, c.Value, option);
     
     send(q, idx);
