@@ -3,7 +3,7 @@
 appDesigner*/
 *.asv
 test/
-
+test_*.m
 
 # updates temporarily ignore
 ezActi2/
@@ -12,5 +12,7 @@ ezActi2/
 @acti/qc.m
 @actogram/
 rhythm/isiv.m
+rhythm/li_*.m
 
-
+# project related
+ukb*.m

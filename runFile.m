@@ -12,7 +12,7 @@ function runFile(process, source, destination, epoch, fid, varargin)
 % parse inputs to generate file name
 [srcPath, filename] = fileparts(source);
 writeFile  = fullfile(destination, [filename '.' lower(process(4:end))]);
-actigraphy = load(source);
+actigraphy = load(source, '-ascii');
 
 % load gap if exist
 quality = ones(size(actigraphy, 1), 1);
@@ -95,6 +95,8 @@ switch process
         [toFile, res, fmt] = feval(process, actigraphy(:, 1), epoch, starttime, quality, window, parameter);
     case 'detUPMEMD'
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, cyclen, filename, starttime, destination, quality, minCycle);
+    case 'detUPMEMDperCycle'
+        [res, fmt]         = feval(process, actigraphy(:),    epoch, minCycle); % UPMEMD stored components in row vector
     case 'detNonparametric'
         [res, fmt]         = feval(process, actigraphy(:, 1), epoch, starttime, quality, isivInfo);
     case 'detCosinor'
@@ -118,7 +120,7 @@ switch process
         for iR = 1:size(res, 1)
             fprintf(fid, ['%s\t' fmt], filename, res(iR, :));
         end
-    case {'detUPMEMD', 'detNonparametric', 'detCosinor'}
+    case {'detUPMEMD', 'detNonparametric', 'detUPMEMDperCycle', 'detCosinor'}
         fprintf(fid, ['%s\t' fmt], filename, res);
     case 'detQC'
         fprintf(fid, ['%s\t' fmt], filename, res.pass, res.message);
