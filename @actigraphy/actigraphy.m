@@ -1,3 +1,14 @@
+%ACTIGRAPHY
+% 
+% Descriptions tba
+% 
+%   $Author:  Peng Li, Ph.D.
+%   $Date:    Dec 23, 2019
+% 
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+%                      (C) Peng Li 2019 -
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% 
 classdef actigraphy < handle
     properties (Access = public)
         actigraphyFig
