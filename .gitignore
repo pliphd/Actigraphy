@@ -2,18 +2,11 @@
 *.psd
 appDesigner*/
 *.asv
-test/
 test_*.m
 acc2counts/
 
 # updates temporarily ignore
-ezActi2/
-@cosinor/
-@acti/plotActogram.m
-@acti/qc.m
-@actogram/
-rhythm/isiv.m
-rhythm/li_*.m
 
 # project related
-ukb*.m
+ukb/
+par/

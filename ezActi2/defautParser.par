@@ -1,0 +1,13 @@
+fileNameSplitter   = {'_', '.'};
+
+dataTimeFieldIndex = 1;
+dataTimeFormat     = 'yyyyMMddHHmmss';
+
+epochLengthIndex   = 2;
+
+nameFields = strsplit(filename, fileNameSplitter);
+starttime  = datetime(nameFields{dataTimeFieldIndex}, 'InputFormat', dataTimeFormat);
+epoch      = str2double(nameFields{epochLengthIndex});
+
+out.starttime = starttime;
+out.epoch     = epoch;
