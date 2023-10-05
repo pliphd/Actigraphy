@@ -32,9 +32,9 @@ The current release represents the second major updates, and thus the software a
 
 # Other Dependencies
 
-- [Physiological Time Series](../../Physiological-time-series)
-- [Plot Rendering](../plot-spec)
-- [Detrended Fluctuation Analysis](../dfa)
+- [Physiological Time Series](https://github.com/pliphd/Physiological-time-series)
+- [Plot Rendering](https://github.com/pliphd/plot-spec)
+- [Detrended Fluctuation Analysis](https://github.com/pliphd/dfa)
 
 # System Requirements
 
