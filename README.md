@@ -32,7 +32,7 @@ The current release represents the second major updates, and thus the software a
 
 # Other Dependencies
 
-- [Physiological Time Series](../Physiological-time-series)
+- [Physiological Time Series](../../Physiological-time-series)
 - [Plot Rendering](../plot-spec)
 - [Detrended Fluctuation Analysis](../dfa)
 
