@@ -1,8 +1,15 @@
 # The Actigraphy Project
----
+
+## Contents
+
+- [Overview](#overview)
+- [Repo Contents](#repo-contents)
+- [System Requirements](#system-requirements)
+- [Installation Guide](#installation-guide)
+- [Reading Materials and Citations](#reading-materials-and-citations)
+- [License](./LICENSE)
 
 # Overview
----
 
 Actigraphy allows a non-invasive and cost-effective assessment of the functional manifestation of the circadian control under naturalistic settings in terms of rest-activity patterns, which enables scalable applications in population and large cohort study settings.
 
@@ -11,7 +18,6 @@ We developed a software application, ezActi, in the MATLAB<sup>&copy;</sup> plat
 The current release represents the second major updates, and thus the software application is formally named "*ezActi2*."
 
 # Repo Contents
----
 
 - [@acti](./@acti): MATLAB source code for the *acti* class.
 - [@actigraphy](./@actigraphy): MATLAB source code for the *actigraphy* class.
@@ -25,14 +31,12 @@ The current release represents the second major updates, and thus the software a
 - [test](./test): test data.
 
 # Other Dependencies
----
 
 - [Physiological Time Series](../Physiological-time-series)
 - [Plot Rendering](../plot-spec)
 - [Detrended Fluctuation Analysis](../dfa)
 
 # System Requirements
----
 
 ## Hardware
 
@@ -58,9 +62,8 @@ The following toolboxes are required.
 - Statistics and Machine Learning Toolbox
 
 # Installation Guide
----
 
-Please clone this repo and all dependencies in [Other Dependences](#other-dependences) to local directory. The following commands should work:
+Please clone this repo and all dependencies in [Other Dependences](#other-dependencies) to local directory. The following commands should work:
 
 ```
 git clone git@github.com:pliphd/Actigraphy.git
@@ -86,11 +89,10 @@ ezActi2
 in MATLAB command window. The App will pop out if the above steps are successfully done.
 
 # Reading Materials and Citations
----
 
 I recommend you go over the following webpage or papers.
 
-- P Li. [ezActi—A Software Application for Actigraphy Analysis](https://pliphd.github.io/resources/EzActi-A-Software-Application-for-Actigraphy-Analysis/){:target="_blank"}
-- C Gao, *et al*. Approaches for assessing circadian rest-activity patterns using actigraphy for cohort and population-based studies. *Current Sleep Medicine Reports* 2023. [Link to the article <i class="bi bi-file-pdf"></i>](https://doi.org/10.1007/s40675-023-00267-4){:target="_blank"}
+- P Li. [ezActi—A Software Application for Actigraphy Analysis](https://pliphd.github.io/resources/EzActi-A-Software-Application-for-Actigraphy-Analysis/)
+- C Gao, *et al*. Approaches for assessing circadian rest-activity patterns using actigraphy for cohort and population-based studies. *Current Sleep Medicine Reports* 2023. [Link to the article <i class="bi bi-file-pdf"></i>](https://doi.org/10.1007/s40675-023-00267-4)
 
 I kindly ask that you cite the above-referenced article(s) if you use *ezActi2* in your research and publications.
