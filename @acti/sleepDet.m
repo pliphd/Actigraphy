@@ -10,6 +10,8 @@ function this = sleepDet(this)
 %               see comments below for summary statics
 %           Jun 25, 2021
 %               nan gap epochs
+%           Jan 04, 2024
+%               allow Actiware sleep detection approach
 
 x   = this.Data;
 len = length(x);
@@ -21,10 +23,15 @@ x(this.GapSeries) = nan;
 this.SleepSummary.Window = wind;
 
 % sleep detection
-sleepSeries = doSleepDet2(x, this.Epoch, ...
-    this.SleepInfo.ModeParameter.V, ...
-    this.SleepInfo.ModeParameter.P, ...
-    this.SleepInfo.ModeParameter.C);
+switch this.SleepInfo.Method
+    case 'Cole-Kripke'
+        sleepSeries = doSleepDet2(x, this.Epoch, ...
+            this.SleepInfo.ModeParameter.V, ...
+            this.SleepInfo.ModeParameter.P, ...
+            this.SleepInfo.ModeParameter.C);
+    case 'Actiware'
+        sleepSeries = doSleepDetActiware(x, this.Epoch, this.SleepInfo.ModeParameter.T);
+end
 
 this.SleepSeries = sleepSeries & mask;
 this.Sleep       = detConstantOne(this.SleepSeries);

@@ -1126,6 +1126,10 @@ classdef ImportWizard < handle
                     app.DecoderSeperatorUserEditor.Value = sep;
                 end
                 
+                % in case sep_ stored before is not a cell
+                if ~iscell(sep_)
+                    sep_ = {sep_};
+                end
                 app.SeparatorDetailLabel.Text = "Defined separator(s): " + strcat(sep_{:});
             end
         end
