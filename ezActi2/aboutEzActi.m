@@ -62,10 +62,10 @@ classdef aboutEzActi < handle
                 'BackgroundColor', 'w', 'ButtonPushedFcn', @(source, event) logButtonPushedFcn(app, source, event));
             
             app.verLabel = uilabel(app.AboutEZFigure, 'Position', [220 180 200 45], 'BackgroundColor', 'w', ...
-                'Text', {'Version: 1.0.0517'; 'May 17, 2023'; 'Licence: developer'});
+                'Text', {'Version: 1.1.0104'; 'Jan 4, 2024'; 'Licence: developer'});
             
             app.rightLabel = uilabel(app.AboutEZFigure, 'Position', [220 120 200 45], 'BackgroundColor', 'w', ...
-                'Text', {'© 2016-2023 Peng Li'; 'A product of the E-Z series.'; 'Developer: Peng Li, Ph.D.'});
+                'Text', {'© 2016-2024 Peng Li'; 'A product of the E-Z series.'; 'Developer: Peng Li, Ph.D.'});
             
             app.ackLabel = uilabel(app.AboutEZFigure, 'Position', [220 20 200 85], 'BackgroundColor', 'w', ...
                 'Text', {'Acknowledgment:'; 'MATLAB is registered trademarks'; 'of The MathWorks, Inc.'; ''; 'A deep sense of gratitude to my'; 'wife, my son, and my daughter.'});

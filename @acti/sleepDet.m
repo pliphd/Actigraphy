@@ -12,6 +12,8 @@ function this = sleepDet(this)
 %               nan gap epochs
 %           Jan 04, 2024
 %               allow Actiware sleep detection approach
+%           Jan 30, 2024
+%               revise algorithms for calc. of waso and times awake
 
 x   = this.Data;
 len = length(x);
@@ -67,7 +69,12 @@ this.Sleep       = detConstantOne(this.SleepSeries);
 %   it is INCORRECT to scale it to the actual windwo length, since the
 %   SleepSeries is already masked. The duration should still be scaled to
 %   24 h
-duration = sum(this.SleepSeries) / (len - sum(this.GapSeries)) * 24;
+% modif. 2024/01/30
+%   it is biased to use the actual length less gap length, especially when
+%   the gap % is significant. This will may cause an odd result for the
+%   duration to be beyond the actual window length.
+% duration = sum(this.SleepSeries) / (len - sum(this.GapSeries)) * 24;
+duration = sum(this.SleepSeries) / len * 24;
 
 % validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
 % if validtim < 0
@@ -84,21 +91,70 @@ awakeEpi = transSegGap(this.Sleep, len);
 awakeEpi3 = awakeEpi;
 merg      = awakeEpi3(:, 2) - awakeEpi3(:, 1) <= 3;
 awakeEpi3(merg, :) = [];
-sleepFreq = (size(awakeEpi3, 1) + 1) / (len - sum(this.GapSeries)) * 24 * 3600 / this.Epoch;
+% sleepFreq = (size(awakeEpi3, 1) + 1) / (len - sum(this.GapSeries)) * 24 * 3600 / this.Epoch;
+sleepFreq = (size(awakeEpi3, 1) + 1) / len * 24 * 3600 / this.Epoch;
 
-% re-estimate times awake and waso
-% if > 60 min, suspect to be fully awake and not awake temperally in sleep
-% 2021-12-03
-awakeEpi((awakeEpi(:, 2) - awakeEpi(:, 1)) * this.Epoch / 60 > 60, :) = [];
+% % re-estimate times awake and waso
+% % if > 60 min, suspect to be fully awake and not awake temperally in sleep
+% % 2021-12-03
+% awakeEpi((awakeEpi(:, 2) - awakeEpi(:, 1)) * this.Epoch / 60 > 60, :) = [];
+% 
+% if ~isempty(awakeEpi)
+%     awake = size(awakeEpi, 1) / (len - sum(this.GapSeries)) * 24 * 3600 / this.Epoch;
+%     awakeSeries = seg2Series(awakeEpi, len);
+%     waso = sum(awakeSeries) / (len - sum(this.GapSeries)) * 24 * 60;
+% else
+%     awake = 0;
+%     waso  = 0;
+% end
 
-if ~isempty(awakeEpi)
-    awake = size(awakeEpi, 1) / (len - sum(this.GapSeries)) * 24 * 3600 / this.Epoch;
-    awakeSeries = seg2Series(awakeEpi, len);
-    waso = sum(awakeSeries) / (len - sum(this.GapSeries)) * 24 * 60;
-else
-    awake = 0;
-    waso  = 0;
+% 2024-01-30
+% waso and times awake need to be estimated by a window-to-window basis
+% otherwise many periods before sleep or after wakeup may be incorrectly
+% included
+awake_w = zeros(numel(wind), 1);
+waso_w  = awake_w;
+for iW  = 1:size(wind, 1)
+    sleepSeries_w = sleepSeries(wind(iW, 1):wind(iW, 2));
+    awakeEpi_w    = detConstantOne(~sleepSeries_w);
+
+    if isempty(awakeEpi_w)
+        awake_w(iW) = 0;
+        waso_w(iW)  = 0;
+    else
+        if size(awakeEpi_w, 1) == 1
+            if awakeEpi_w(1, 1) == 1 || awakeEpi_w(1, 2) == wind(iW, 2)-wind(iW, 1)+1
+                awake_w(iW) = 0;
+                waso_w(iW)  = 0;
+            else
+                awake_w(iW) = 1;
+                waso_w(iW)  = awakeEpi_w(1, 2) - awakeEpi_w(1, 1) + 1;
+            end
+        else
+            % if first awake start from first index of wind(iW), it's considered
+            % not getting into bed yet, need to get rid
+            if awakeEpi_w(1, 1) == 1
+                awakeEpi_w(1, :) = [];
+            end
+            % if last awake end with last index of wind(iW), it's considered
+            % getup already, need to get rid
+            if awakeEpi_w(end, 2) == wind(iW, 2)-wind(iW, 1)+1
+                awakeEpi_w(end, :) = [];
+            end
+
+            if isempty(awakeEpi_w)
+                awake_w(iW) = 0;
+                waso_w(iW)  = 0;
+            else
+                awake_w(iW) = size(awakeEpi_w, 1);
+                waso_w(iW)  = sum(awakeEpi_w(:, 2) - awakeEpi_w(:, 1) + 1);
+            end
+        end
+    end
 end
+awake = sum(awake_w, 'omitnan') / len * 24 * 3600 / this.Epoch;
+waso  = sum(waso_w, 'omitnan') / len * 24 * 60;
+
 
 this.SleepSummary.Report = table(duration, sleepFreq, awake, waso, ...
     'VariableNames', {'sleep_duration_avg', 'sleep_frequency_avg', 'times_awake_avg', 'waso_avg_in_min'});
