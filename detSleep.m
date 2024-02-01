@@ -14,6 +14,9 @@ function [sleep, res, fmt] = detSleep(actigraphy, epoch, varargin)
 %               Jun 24, 2021
 %                   adapt results and format to changes in summary sleep
 %                   statics changes
+%               Feb 01, 2024
+%                   adapt SleepInfo to the new SleepInfo struct with Method
+%                   field
 % 
 
 % to be modified
@@ -29,7 +32,8 @@ if length(actigraphy)*epoch / 3600 / 24 >= 2
     
     a.SleepInfo = struct('StartTime', window.StartTime, ...
         'EndTime', window.EndTime, ...
-        'ModeParameter', para);
+        'ModeParameter', para.ModeParameter, ...
+        'Method', para.Method);
     
     a = a.sleepDet;
     
