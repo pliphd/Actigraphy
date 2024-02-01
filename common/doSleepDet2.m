@@ -23,6 +23,8 @@ function sleepSeries = doSleepDet2(data, epoch, V, P, C)
 %               incorporate gap info so remove off-wrist detection
 %           Apr 22, 2021
 %               add options to prevent empty sleepEpi
+%           Feb 01, 2024
+%               adapt mean etc. to preferred versions
 % 
 
 rescale = 60 / epoch;
@@ -30,10 +32,10 @@ switch rescale
     case {4, 2}
         tempLen = floor(length(data) / rescale) * rescale;
         if tempLen == length(data)
-            rec1 = nanmean(reshape(data, rescale, []), 1)';
+            rec1 = mean(reshape(data, rescale, []), 1, "omitnan")';
         else
-            res  = nanmean(data(tempLen+1:end));
-            rec1 = [nanmean(reshape(data(1:tempLen), rescale, []), 1)'; res(:)];
+            res  = mean(data(tempLen+1:end), "omitnan");
+            rec1 = [mean(reshape(data(1:tempLen), rescale, []), 1, "omitnan")'; res(:)];
         end
     case 3
         return; % do nothing at this moment, to interp later
