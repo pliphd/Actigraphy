@@ -4,6 +4,11 @@ appDesigner*/
 *.asv
 test_*.m
 acc2counts/
+test/Auto_QC/
+test/Gap
+test/numResults/
+test/Sleep/
+test/UPMEMDperCycle/
 
 # updates temporarily ignore
 
