@@ -9,9 +9,17 @@ test/Gap
 test/numResults/
 test/Sleep/
 test/UPMEMDperCycle/
+test/Circadian/
+test/accel*.csv
+test/bbi*.csv
+test/garmin*
+test/fitrockr*
+test/actiwatch*
+test/1*.txt
 
 # updates temporarily ignore
 
 # project related
 ukb/
 par/
+
