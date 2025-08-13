@@ -3,10 +3,15 @@ function this = qc(this)
 % 
 % $Author: Peng Li
 % $Date:   Feb 07, 2022
+% $Modif.: Aug 13, 2025
+%               output data length in day
 % 
 
 len = length(this.Data);
 qcMessage = "";
+
+% check data length
+len_in_day = len * this.Epoch / 3600 / 24;
 
 %% 1: consistant off-wrist during nighttime
 % time restrition mask between 21:00 and 7:00
@@ -79,6 +84,7 @@ qcPass = ~(offWristFlag || failureDaysFlag || activeDaysFlag || activeOrFailureD
 
 this.QCimpression.pass    = qcPass;
 this.QCimpression.message = qcMessage;
+this.QCimpression.length_in_day = len_in_day;
 end
 
 function zeroLenMax = contZero(sig, ind, epoch)
