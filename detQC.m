@@ -21,4 +21,4 @@ a = qc(a);
 % request summary results here
 res = a.QCimpression;
 
-fmt = '%d\t%s\n';
+fmt = '%d\t%s\t%f\n';
