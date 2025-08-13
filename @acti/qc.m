@@ -81,6 +81,9 @@ if ~failureDaysFlag && ~activeDaysFlag
 end
 
 qcPass = ~(offWristFlag || failureDaysFlag || activeDaysFlag || activeOrFailureDaysFlag);
+if qcPass
+    qcMessage = "pass";
+end
 
 this.QCimpression.pass    = qcPass;
 this.QCimpression.message = qcMessage;
