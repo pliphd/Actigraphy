@@ -15,6 +15,9 @@ classdef acti < timeseries
     %               Add T in the ModeParameter field to support Actiware
     %                   sleep detection;
     %               Add Method field in SleepInfo property.
+    %           Oct 15, 2025
+    %               Add Option in SleepInfo struct to facilitate different
+    %                   detection options especially when detecting nap.
     % 
     
     properties (SetAccess = immutable)
@@ -43,7 +46,8 @@ classdef acti < timeseries
         SleepInfo = struct('StartTime', '', ...
             'EndTime', '', ...
             'Method', {'Cole-Kripke'}, ...
-            'ModeParameter', struct('P', [], 'V', [], 'C', [], 'T', []))
+            'ModeParameter', struct('P', [], 'V', [], 'C', [], 'T', []), ...
+            'Option', {'None'})
         
         ISIVInfo = struct('TimeScaleInMin', [], 'PeriodInHour', [], 'FixedCycles', [])
         

@@ -3,23 +3,18 @@
 appDesigner*/
 *.asv
 test_*.m
-acc2counts/
+acc2counts/tes*.m
 test/Auto_QC/
 test/Gap
 test/numResults/
 test/Sleep/
 test/UPMEMDperCycle/
 test/Circadian/
+test/Raw/
 test/accel*.csv
 test/bbi*.csv
 test/garmin*
 test/fitrockr*
 test/actiwatch*
-test/1*.txt
 
 # updates temporarily ignore
-
-# project related
-ukb/
-par/
-

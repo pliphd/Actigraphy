@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/267943462.svg)](https://zenodo.org/badge/latestdoi/267943462)
 
-## Contents
+# Contents
 
 - [Overview](#overview)
 - [Repo Contents](#repo-contents)
@@ -17,7 +17,16 @@ Actigraphy allows a non-invasive and cost-effective assessment of the functional
 
 We developed a software application, ezActi, in the MATLAB<sup>&copy;</sup> platform (R2022a and later versions, The MathWorks Inc., Natick, MA) that implements a number of algorithms for rest-activity rhythms analysis. We hope that such an application will ease and facilitate these analyses in a wider community within and beyond the network of sleep and circadian biologists, physiologists, and clinicians.
 
-The current release represents the second major updates, and thus the software application is formally named "*ezActi2*."
+The current release represents the third major updates, and thus the software application is formally named "*ezActi3*."
+
+While older versions "*ezActi*" and "*ezActi2*" are still available in the repo, updates have been stopped, and performance is not guaranteed.
+
+# What's New
+
+## New in Ver. 3.0.1017
+
+- New function featuring the convertion of raw 3-dimensional accelerometer data to activity counts.
+- Consolidated approach for nocturnal and daytime sleep detection.
 
 # Repo Contents
 
@@ -84,10 +93,10 @@ in MATLAB command window. You can also do so by the *Set Path* button on MATLAB 
 
 The cloning process of the repositories take less than 10 seconds to finish with a morden common bandwith internet connection. It just takes several clicks to set up the path in MATLAB.
 
-To run *ezActi2*, you can type:
+To run *ezActi*, you can type:
 
 ```
-ezActi2
+ezActi3
 ```
 
 in MATLAB command window. The App will pop out if the above steps are successfully done.
@@ -96,9 +105,9 @@ in MATLAB command window. The App will pop out if the above steps are successful
 
 I recommend you go over the following webpage or papers.
 
-1. P Li. [ezActi—A Software Application for Actigraphy Analysis](https://pliphd.github.io/resources/EzActi-A-Software-Application-for-Actigraphy-Analysis/)
+1. P Li. [ezActi—A Software Application for Actigraphy Analysis](https://lsdh.mgh.harvard.edu/resources/EzActi-A-Software-Application-for-Actigraphy-Analysis/)
 1. C Gao, *et al*. Approaches for assessing circadian rest-activity patterns using actigraphy for cohort and population-based studies. *Current Sleep Medicine Reports* 2023. [Link to the article <i class="bi bi-file-pdf"></i>](https://doi.org/10.1007/s40675-023-00267-4)
 
-I kindly ask that you cite the above-referenced article(s) if you use *ezActi2* in your research and publications.
+I kindly ask that you cite the above-referenced article(s) if you use *ezActi* in your research and publications.
 
-The expected output from the *ezActi2* for different analyses are shown in the first document listed above. The run time varies for different analyses, but with the test data (which are arond 7-day actigraphy recordings) provided in this release, the run time for these different analyses should all within 1-3 seconds. We are working on showcasing the App for different analyses, so please stay tuned.
+The expected output from the *ezActi* for different analyses are shown in the first document listed above. The run time varies for different analyses, but with the test data (which are arond 7-day actigraphy recordings) provided in this release, the run time for these different analyses should all within 1-3 seconds. We are working on showcasing the App for different analyses, so please stay tuned.

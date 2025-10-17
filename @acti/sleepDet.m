@@ -14,6 +14,11 @@ function this = sleepDet(this)
 %               allow Actiware sleep detection approach
 %           Jan 30, 2024
 %               revise algorithms for calc. of waso and times awake
+%           Oct 15, 2025
+%               add post-hoc sleep episode clean-up based on Option field
+%               clean up summary stat based on what are actually calculated
+%               some summary stat do not make sense for nap, 24-h sleep, or
+%                   nocturnal sleep
 
 x   = this.Data;
 len = length(x);
@@ -36,148 +41,89 @@ switch this.SleepInfo.Method
 end
 
 this.SleepSeries = sleepSeries & mask;
-this.Sleep       = detConstantOne(this.SleepSeries);
 
-% summary stat
-% sumStat = arrayfun(@(x) sleepSum(this.SleepSummary.Window(x, :), ...
-%     this.SleepSeries, this.GapSeries, this.Epoch), ...
-%     1:size(this.SleepSummary.Window, 1), ...
-%     'uni', 0);
-% reportPerDay = vertcat(sumStat{:});
-% report = nanmean(reportPerDay, 1);
-% 
-% this.SleepSummary.ReportPerDay = table(reportPerDay(:, 1), reportPerDay(:, 2), ...
-%     'VariableNames', {'sleep_duration', 'times_awake'});
+% post-hoc clean-up request
+sleepEpi = detConstantOne(this.SleepSeries);
 
-% comment 6/24/2021
-% first, cutting into days needs to consider incomplete days since it
-% happens that sleep duration in an incomplete day maybe 0, which biases
-% the calculation, should get rid of the incomplete days
-% second, considering gaps in sleep duration calculation is tricky too
-% since there is no good way to scale it, given the different effects when
-% gap presents during sleep or wake hours
-% 
-% desided to do this easier:
-% sleep duration per day = total sleep time / data length
-% take gaps out of sleep episodes, and leave exclusion later when
-% analyzing the results if too many gaps
-% 
-% modif. 2021/09/30
-%   scale to the actual length of time window for sleep detection, instead
-%   of 24 hour
-% modif. 2021/12/08
-%   it is INCORRECT to scale it to the actual windwo length, since the
-%   SleepSeries is already masked. The duration should still be scaled to
-%   24 h
-% modif. 2024/01/30
-%   it is biased to use the actual length less gap length, especially when
-%   the gap % is significant. This will may cause an odd result for the
-%   duration to be beyond the actual window length.
-% duration = sum(this.SleepSeries) / (len - sum(this.GapSeries)) * 24;
-duration = sum(this.SleepSeries) / len * 24;
+switch this.SleepInfo.Option
+    case 'Nap 5min+'
+        sleepEpi((sleepEpi(:, 2) - sleepEpi(:, 1) + 1) * this.Epoch < 5*60, :) = [];
+end
 
-% validtim = sum(diff([0; this.SleepSeries]) == 1)-1;
-% if validtim < 0
-%     validtim = nan;
-% end
-% awake = validtim / ((len - sum(this.GapSeries)) * this.Epoch / 3600 / maskLength);
+this.Sleep = sleepEpi;
 
-awakeEpi = transSegGap(this.Sleep, len);
+% Summary statistics
+% 1. duration
+duration = sum(seg2Series(sleepEpi, len)) / len * 24;
 
-% 2021-12-02
-% old criterion applied here: if < 3 min, treat as belonging to the same
-% sleep (when calculate sleep frequency), but although short interval, this
-% should be included in calculating awake time and waso
-awakeEpi3 = awakeEpi;
-merg      = awakeEpi3(:, 2) - awakeEpi3(:, 1) <= 3;
-awakeEpi3(merg, :) = [];
-% sleepFreq = (size(awakeEpi3, 1) + 1) / (len - sum(this.GapSeries)) * 24 * 3600 / this.Epoch;
-sleepFreq = (size(awakeEpi3, 1) + 1) / len * 24 * 3600 / this.Epoch;
+% 2. frequency, times awake and waso
+switch this.SleepInfo.Option
+    case 'Nocturnal'
+        % frequency not calculated for nocturnal sleep
+        % waso and times awake make more sense for nocturnal sleep
+        sleepFreq = nan;
 
-% % re-estimate times awake and waso
-% % if > 60 min, suspect to be fully awake and not awake temperally in sleep
-% % 2021-12-03
-% awakeEpi((awakeEpi(:, 2) - awakeEpi(:, 1)) * this.Epoch / 60 > 60, :) = [];
-% 
-% if ~isempty(awakeEpi)
-%     awake = size(awakeEpi, 1) / (len - sum(this.GapSeries)) * 24 * 3600 / this.Epoch;
-%     awakeSeries = seg2Series(awakeEpi, len);
-%     waso = sum(awakeSeries) / (len - sum(this.GapSeries)) * 24 * 60;
-% else
-%     awake = 0;
-%     waso  = 0;
-% end
-
-% 2024-01-30
-% waso and times awake need to be estimated by a window-to-window basis
-% otherwise many periods before sleep or after wakeup may be incorrectly
-% included
-awake_w = zeros(numel(wind), 1);
-waso_w  = awake_w;
-for iW  = 1:size(wind, 1)
-    sleepSeries_w = sleepSeries(wind(iW, 1):wind(iW, 2));
-    awakeEpi_w    = detConstantOne(~sleepSeries_w);
-
-    if isempty(awakeEpi_w)
-        awake_w(iW) = 0;
-        waso_w(iW)  = 0;
-    else
-        if size(awakeEpi_w, 1) == 1
-            if awakeEpi_w(1, 1) == 1 || awakeEpi_w(1, 2) == wind(iW, 2)-wind(iW, 1)+1
-                awake_w(iW) = 0;
-                waso_w(iW)  = 0;
-            else
-                awake_w(iW) = 1;
-                waso_w(iW)  = awakeEpi_w(1, 2) - awakeEpi_w(1, 1) + 1;
-            end
-        else
-            % if first awake start from first index of wind(iW), it's considered
-            % not getting into bed yet, need to get rid
-            if awakeEpi_w(1, 1) == 1
-                awakeEpi_w(1, :) = [];
-            end
-            % if last awake end with last index of wind(iW), it's considered
-            % getup already, need to get rid
-            if awakeEpi_w(end, 2) == wind(iW, 2)-wind(iW, 1)+1
-                awakeEpi_w(end, :) = [];
-            end
+        % times awake and waso
+        awake_w = zeros(numel(wind), 1);
+        waso_w  = awake_w;
+        for iW  = 1:size(wind, 1)
+            sleepSeries_w = sleepSeries(wind(iW, 1):wind(iW, 2));
+            awakeEpi_w    = detConstantOne(~sleepSeries_w);
 
             if isempty(awakeEpi_w)
                 awake_w(iW) = 0;
                 waso_w(iW)  = 0;
             else
-                awake_w(iW) = size(awakeEpi_w, 1);
-                waso_w(iW)  = sum(awakeEpi_w(:, 2) - awakeEpi_w(:, 1) + 1);
+                if size(awakeEpi_w, 1) == 1
+                    if awakeEpi_w(1, 1) == 1 || awakeEpi_w(1, 2) == wind(iW, 2)-wind(iW, 1)+1
+                        awake_w(iW) = 0;
+                        waso_w(iW)  = 0;
+                    else
+                        awake_w(iW) = 1;
+                        waso_w(iW)  = awakeEpi_w(1, 2) - awakeEpi_w(1, 1) + 1;
+                    end
+                else
+                    % if first awake start from first index of wind(iW), it's considered
+                    % not getting into bed yet, need to get rid
+                    if awakeEpi_w(1, 1) == 1
+                        awakeEpi_w(1, :) = [];
+                    end
+                    % if last awake end with last index of wind(iW), it's considered
+                    % getup already, need to get rid
+                    if awakeEpi_w(end, 2) == wind(iW, 2)-wind(iW, 1)+1
+                        awakeEpi_w(end, :) = [];
+                    end
+
+                    if isempty(awakeEpi_w)
+                        awake_w(iW) = 0;
+                        waso_w(iW)  = 0;
+                    else
+                        awake_w(iW) = size(awakeEpi_w, 1);
+                        waso_w(iW)  = sum(awakeEpi_w(:, 2) - awakeEpi_w(:, 1) + 1);
+                    end
+                end
             end
         end
-    end
-end
-awake = sum(awake_w, 'omitnan') / len * 24 * 3600 / this.Epoch;
-waso  = sum(waso_w, 'omitnan') / len * 24 * 60;
+        awake = sum(awake_w, 'omitnan') / len * 24 * 3600 / this.Epoch;
+        waso  = sum(waso_w, 'omitnan') / len * 24 * 60;
+    case 'Nap 5min+'
+        awakeEpi = transSegGap(this.Sleep, len);
 
+        % old criterion applied here: if < 3 min, treat as belonging to the same
+        % nap (when calculate nap frequency)
+        awakeEpi3 = awakeEpi;
+        merg      = awakeEpi3(:, 2) - awakeEpi3(:, 1) <= 3;
+        awakeEpi3(merg, :) = [];
+        sleepFreq = (size(awakeEpi3, 1) + 1) / len * 24 * 3600 / this.Epoch;
+
+        awake = nan;
+        waso  = nan;
+    case '24 h'
+        sleepFreq = nan;
+        awake     = nan;
+        waso      = nan;
+end
 
 this.SleepSummary.Report = table(duration, sleepFreq, awake, waso, ...
     'VariableNames', {'sleep_duration_avg', 'sleep_frequency_avg', 'times_awake_avg', 'waso_avg_in_min'});
 end
-
-% function out = sleepSum(window, sleepSeries, gapSeries, epoch)
-% curSleep = sleepSeries(window(1):window(2));
-% curGap   = gapSeries(window(1):window(2));
-% 
-% % if gap percentage is over 40%, skip this night
-% % otherwise, calculate, then scale the sleep duration based on percentage
-% % of valid data used
-% if sum(curGap)/numel(curGap) >= 0.4
-%     duration = nan;
-%     awake    = nan;
-% else
-%     duration = epoch/3600 * sum(curSleep & ~curGap) * (numel(curGap)/sum(~curGap));
-%     
-%     validtim = sum(diff([0; curSleep & ~curGap]) == 1)-1;
-%     if validtim < 0
-%         validtim = nan;
-%     end
-%     awake = validtim * (numel(curGap)/sum(~curGap));
-% end
-% out = [duration awake];
-% end
