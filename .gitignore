@@ -4,6 +4,7 @@ appDesigner*/
 *.asv
 test_*.m
 acc2counts/tes*.m
+acc2counts/batch*.m
 test/Auto_QC/
 test/Gap
 test/numResults/
