@@ -5,6 +5,7 @@
 # Contents
 
 - [Overview](#overview)
+- [What's New](#whatsnew)
 - [Repo Contents](#repo-contents)
 - [System Requirements](#system-requirements)
 - [Installation Guide](#installation-guide)
@@ -15,7 +16,7 @@
 
 Actigraphy allows a non-invasive and cost-effective assessment of the functional manifestation of the circadian control under naturalistic settings in terms of rest-activity patterns, which enables scalable applications in population and large cohort study settings.
 
-We developed a software application, ezActi, in the MATLAB<sup>&copy;</sup> platform (R2022a and later versions, The MathWorks Inc., Natick, MA) that implements a number of algorithms for rest-activity rhythms analysis. We hope that such an application will ease and facilitate these analyses in a wider community within and beyond the network of sleep and circadian biologists, physiologists, and clinicians.
+We developed a software application, ezActi, in the MATLAB<sup>&copy;</sup> platform (R2022a and later versions, The MathWorks Inc., Natick, MA) that implements conversion of 3-dimensional accelerometer signals to activity counts, as well as a number of algorithms for rest-activity rhythms analysis. We hope that such an application will ease and facilitate these analyses in a wider community within and beyond the network of sleep and circadian biologists, physiologists, and clinicians.
 
 The current release represents the third major updates, and thus the software application is formally named "*ezActi3*."
 
@@ -25,7 +26,7 @@ While older versions "*ezActi*" and "*ezActi2*" are still available in the repo,
 
 ## New in Ver. 3.0.1017
 
-- New function featuring the convertion of raw 3-dimensional accelerometer data to activity counts.
+- New function featuring the conversion of raw 3-dimensional accelerometer data to activity counts.
 - Consolidated approach for nocturnal and daytime sleep detection.
 
 # Repo Contents
@@ -35,9 +36,11 @@ While older versions "*ezActi*" and "*ezActi2*" are still available in the repo,
 - [@actigraphy2](./@actigraphy2): MATLAB source code for the *actigraphy2* class. This will eventually replace the *actigraphy* class in future releases.
 - [@actogram](./@actogram): MATLAB source code for the *actogram* class.
 - [@cosinor](./@cosinor): MATLAB source code for the *cosinor* class.
-- [@common](./common): MATLAB source code for common dependencies.
+- [acc2counts](./acc2counts): MATLAB source code for converting 3-D accelerometer signals to activity counts.
+- [common](./common): MATLAB source code for common dependencies.
 - [ezActi](./ezActi): MATLAB source code for *ezActi*. This is the first release of *ezActi* which has now stopped updating.
-- [ezActi2](./ezActi2): MATLAB source code for the *ezActi2*. This is the current release of *ezActi*.
+- [ezActi2](./ezActi2): MATLAB source code for the *ezActi2*. This is the second major release of *ezActi* whi has now stopped updating.
+- [ezActi3](./ezActi3): MATLAB source code for the *ezActi3*. This is the current release of *ezActi*.
 - [rhythm](./rhythm): MATLAB source code for dependencies related to rhythmicity analysis.
 - [test](./test): test data.
 
@@ -53,6 +56,8 @@ While older versions "*ezActi*" and "*ezActi2*" are still available in the repo,
 
 Morden standard computers or laptops will work. It is recommended that a minimal of 16 GB RAM is equipped to facilitate most of the analysis. For optimal performance, CPU of 4+ cores with 3.3+ GHz/core are recommended.
 
+Files for raw accelerometer signals are usually large. It easily occupies 3-4 GB space for a 10-day monitoring with 25Hz sampling rate. It is recommended that a 32 GB RAM is equipped if you plan to perform the conversion for 7-10 days of accelerometer signals to activity counts data. This process also takes time (on average it takes several minutes to completely load the data into memory).
+
 ## Software
 
 ### OS
@@ -65,6 +70,8 @@ The App has been tested on the following systems.
 ### MATLAB platform and toolboxes
 
 The App is developed in the MATLAB platform. MATLAB version R2022a or newer is required. It may be able to run in older versions of MATLAB, but performance/functions are not guaranteed.
+
+The curreent release is developed and tested in MATLAB R2024a.
 
 The following toolboxes are required.
 
