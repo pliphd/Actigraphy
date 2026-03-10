@@ -6,6 +6,9 @@ function this = m10l5Analysis(this)
 % $Modif.:  Jun 25, 2021
 %               instead of calculating per day, average the days first
 %               see comment where revised
+%           Feb 26, 2026
+%               revise output to give hourly mean instead of total
+%               add ra in summary report
 % 
 
 x      = this.Data;
@@ -16,7 +19,9 @@ l5  = nan; t5m  = nan;
 
 if ~this.timeSet
     this.M10L5Summary = table(m10, t10m, l5, t5m, 'VariableNames', {'m10', 'm10_mid_time', 'l5', 'l5_mid_time'});
-    % error('nonparametric:M10L5:actual time is required to perform M10 and L5');
+    this.message.content = 'Actual time is required to perform M10 and L5. M10 and L5 analyses are skipped.';
+    this.message.type = 'warning';
+    this.analysis.m10l5 = 0;
 else
     missingHDuration = this.TimeInfo.StartDate - datetime(year(this.TimeInfo.StartDate), month(this.TimeInfo.StartDate), day(this.TimeInfo.StartDate));
     
@@ -37,7 +42,7 @@ else
     % 
     % m10l5 = nanmean(vertcat(out{:}), 1);
     
-    x24 = nanmean(xPerDay, 2);
+    x24 = mean(xPerDay, 2, 'omitmissing');
     
     % extend data before buffering
     x24loop = [x24; x24; x24];
@@ -57,7 +62,7 @@ else
     xBuffer10  = xBuffer10(:, startInd:endInd);
     index10    = 1:size(xBuffer10, 2);
     
-    hourlyMean = nanmean(xBuffer10, 1) * (10*3600/this.Epoch);
+    hourlyMean = mean(xBuffer10, 1, 'omitmissing') * (10*3600/this.Epoch) ./ 10; % ./10 to give hourly mean otherwise its sum
     [m10, t10] = max(hourlyMean);
     t10m = index10(t10)*this.Epoch/3600;
     
@@ -76,7 +81,7 @@ else
     xBuffer5   = xBuffer5(:, startInd:endInd);
     index5     = 1:size(xBuffer5, 2);
     
-    hourlyMean = nanmean(xBuffer5, 1) * (5*3600/this.Epoch);
+    hourlyMean = mean(xBuffer5, 1, 'omitmissing') * (5*3600/this.Epoch) ./ 5;
     [l5, t5]   = min(hourlyMean);
     t5m = index5(t5)*this.Epoch/3600;
     
@@ -84,8 +89,14 @@ else
     if isempty(t10m), t10m = nan; end
     if isempty(l5),   l5   = nan; end
     if isempty(t5m),  t5m  = nan; end
+
+    ra = (m10 - l5) ./ (m10 + l5);
     
-    this.M10L5Summary = table(m10, t10m, l5, t5m, 'VariableNames', {'m10', 'm10_mid_time', 'l5', 'l5_mid_time'});
+    this.M10L5Summary = table(ra, m10, t10m, l5, t5m, 'VariableNames', {'relative_amplitude', 'm10', 'm10_mid_time', 'l5', 'l5_mid_time'});
+
+    this.message.content = 'M10 and L5 analyses are completed.';
+    this.message.type = 'success';
+    this.analysis.m10l5 = 1;
 end
 end
 

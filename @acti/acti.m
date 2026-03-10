@@ -18,6 +18,27 @@ classdef acti < timeseries
     %           Oct 15, 2025
     %               Add Option in SleepInfo struct to facilitate different
     %                   detection options especially when detecting nap.
+    %           Dec 08, 2025
+    %               Add Diary as an additional Property to enable
+    %                   operations on sleep diary
+    %               Diary should be a segment matrix like Sleep
+    %           Dec 09, 2025
+    %               Add PlotOption to customize plot
+    %           Feb 15, 2026
+    %               Add PrimarySleep and primarySleepSense to estimate
+    %                   primary sleep window
+    %           Feb 19, 2026
+    %               Update plot logic to better integrate to ezActi
+    %               Add new properties in ACTIGRAPHY2 to store visualization elements
+    %                   and thus quickly retired the PlotOption here
+    %           Feb 20, 2026
+    %               Add a Circadian property to keep consistency with Gap
+    %                   and Sleep. Circadian property only stores circadian
+    %                   fitted data
+    %           Mar 09, 2026
+    %               Add an 'analysis' struct to mark what analysis has been
+    %                   done
+    %               Add emd method
     % 
     
     properties (SetAccess = immutable)
@@ -27,31 +48,57 @@ classdef acti < timeseries
     
     properties (Dependent = true)
         Gap
+        GapSummary
+
         Sleep
         SleepSummary
+
+        Diary
+
+        Circadian
+
         ISIVSummary
         M10L5Summary
         CosinorSummary
+        EMDSummary
     end
     properties (SetAccess = protected, Hidden = true)
         Gap_
+        GapSummary_
+
         Sleep_
         SleepSummary_
+
+        Diary_
+
+        Circadian_
+
         ISIVSummary_
         M10L5Summary_
         CosinorSummary_
+        EMDSummary_
     end
     
     properties
-        SleepInfo = struct('StartTime', '', ...
+        GapInfo      = struct('Parameter', ...
+            struct('Threshold', 1, 'ThresholdUnit', {'Min'}, 'MinimumDurationInMin', 60, 'MergeIfShorterThanInMin', 60));
+
+        SleepInfo    = struct('StartTime', '', ...
             'EndTime', '', ...
-            'Method', {'Cole-Kripke'}, ...
-            'ModeParameter', struct('P', [], 'V', [], 'C', [], 'T', []), ...
-            'Option', {'None'})
+            'Option', {'Fixed'}, ...        % Available: Estimate, Fixed, Diary
+            ...                             % When Option = 'Estimate' or 'Diary', StartTime and EndTime will be overwritten
+            'Method', {'Cole-Kripke'}, ...  % Available: Cole-Kripke, Actiware
+            'ModeParameter', struct('P', [], 'V', [], 'C', [], ...  % P, V, C correspond to Cole-Kripke
+                'T', [], ...                                        % T corresponds to Actiware
+                'Prim', struct('zeta', 15, 'zeta_a', 2, 'zeta_r', 30, 'alpha', 8, 'hs', 8, 'Lp', 50)))
+
+        DiaryInfo    = struct('Type', '');
         
-        ISIVInfo = struct('TimeScaleInMin', [], 'PeriodInHour', [], 'FixedCycles', [])
+        ISIVInfo     = struct('TimeScaleInMin', [], 'PeriodInHour', [], 'FixedCycles', [])
         
-        CosinorInfo = struct('HarmonicsInHour', [], 'MinimumLengthInDays', [], 'CIAlpha', 0.05, 'UserData', []);
+        CosinorInfo  = struct('HarmonicsInHour', [], 'MinimumLengthInDays', [], 'CIAlpha', 0.05, 'UserData', []);
+
+        EMDInfo  = struct('TargetComponent', [], 'MinimumLengthInDays', [], 'UserData', []);
 
         QCimpression = struct('pass', nan, 'message', '');
     end
@@ -59,15 +106,19 @@ classdef acti < timeseries
     properties (Dependent = true, Hidden = true)
         GapSeries
         SleepSeries
+        SleepWindow
     end
     properties (SetAccess = protected, Hidden = true)
         GapSeries_
         SleepSeries_
+        SleepWindow_
     end
     
     % properties for tolerating other apps
     properties (Hidden = true)
         timeSet
+        message  = struct('type', {''}, 'content', {''})
+        analysis = struct('gap', 0, 'sleep', 0, 'cosinor', 0, 'isiv', 0, 'm10l5', 0, 'emd', 0)
     end
     
     %% construct
@@ -142,12 +193,40 @@ classdef acti < timeseries
         function val = get.SleepSeries(this)
             val = this.SleepSeries_;
         end
+
+        function this = set.SleepWindow(this, val)
+            this.SleepWindow_ = val;
+        end
+        function val = get.SleepWindow(this)
+            val = this.SleepWindow_;
+        end
         
         function this = set.SleepSummary(this, val)
             this.SleepSummary_ = val;
         end
         function val = get.SleepSummary(this)
             val = this.SleepSummary_;
+        end
+
+        function this = set.GapSummary(this, val)
+            this.GapSummary_ = val;
+        end
+        function val = get.GapSummary(this)
+            val = this.GapSummary_;
+        end
+
+        function this = set.Diary(this, val)
+            this.Diary_ = val;
+        end
+        function val = get.Diary(this)
+            val = this.Diary_;
+        end
+
+        function this = set.Circadian(this, val)
+            this.Circadian_ = val;
+        end
+        function val = get.Circadian(this)
+            val = this.Circadian_;
         end
         
         function this = set.ISIVSummary(this, val)
@@ -170,6 +249,13 @@ classdef acti < timeseries
         function val = get.CosinorSummary(this)
             val = this.CosinorSummary_;
         end
+
+        function this = set.EMDSummary(this, val)
+            this.EMDSummary_ = val;
+        end
+        function val = get.EMDSummary(this)
+            val = this.EMDSummary_;
+        end
     end
     
     %% methods -- declaration only
@@ -180,14 +266,30 @@ classdef acti < timeseries
         % processing
         this = gapDet(this);
         this = sleepDet(this);
+        this = primarySleepSense(this);
         this = isivAnalysis(this);
         this = m10l5Analysis(this);
-        this = cosinorAnalysis(this);
+        % this = cosinorAnalysis(this); % retired
         this = cosinorActi(this);
+        this = emd(this);
         
         % visualization
         h = plot(this, varargin);
         h = plotActogram(this, varargin);
+
+        % generate report
+        this = exportReport(this, outputFile, varargin)
+        exportSinglePageReport(this, outputFile, varargin) % layout needs to be improved
+    end
+
+    methods (Hidden = true)
+        refreshGaps(this, actigraphy);
+        this = addSingleGap(this, actigraphy, singleGap);
+
+        refreshSleep(this, actigraphy);
+        refreshPrimarySleep(this, actigraphy);
+        refreshDiary(this, actigraphy);
+        refreshCircadian(this, actigraphy);
     end
 end
 

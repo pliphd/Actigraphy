@@ -1,28 +1,39 @@
 function h = plotActogram(this, varargin)
 %PLOTACTOGRAM plot an ACTI object in actogram format
 % 
-% $Author: Peng Li
-% $Date:   Dec 01, 2021
+% $Author:  Peng Li
+% $Date:    Dec 01, 2021
+% $Modif.:  Feb 26, 2026
+%               Mark primary sleep window if possible
+%               Using darker colors for potential primary sleep
 % 
 
-% axes
-if nargin == 2
-    if isa(varargin{1}, 'actogram')
-        if isempty(findobj('Tag', 'actogramFig'))
-            h = actogram(this);
-        else
-            h = varargin{1};
-            h.hostApp = this;
-            cla(h.actiAxis);
-        end
-    else
-        if ~isempty(findobj('Tag', 'actogramFig'))
-            delete(findobj('Tag', 'actogramFig'));
-        end
-        h = actogram(this);
-    end
+% input parser
+if nargin > 1 && isa(varargin{1}, 'actogram')
+    providedHandle = varargin{1};
+    nameValueArgs  = varargin(2:end);
 else
-    h = actogram(this);
+    providedHandle = [];
+    nameValueArgs  = varargin;
+end
+
+p = inputParser;
+addParameter(p, 'Visible', true, @islogical);
+parse(p, nameValueArgs{:});
+
+createNew = true;
+if ~isempty(providedHandle)
+    if ~isempty(findobj('Tag', 'actigraphyFig'))
+        createNew = false; % valid handle + figure still exists → reuse
+    end
+end
+
+if createNew
+    h = actogram(this, 'Visible', p.Results.Visible);
+else
+    h = providedHandle;
+    h.hostApp = this;
+    cla(h.actiAxis);
 end
 
 set(h.actiAxis, 'NextPlot', 'add');
@@ -81,26 +92,100 @@ baseline  = (0:linesReq-1) .* layrange;
 baseline  = baseline(end:-1:1);
 
 % fill sleep
-fillColor  = [.8 .9 .95];
+winLineColor = [.95 .4 .3];
+if isprop(this, 'SleepWindow') && ~isempty(this.SleepWindow)
+    sw = detConstantOne(~this.SleepWindow);
+    for iW = 1:size(sw, 1)
+        cW = sw(iW, :);
+        stW = this.TimeInfo.StartDate + cW*seconds(this.Epoch);
+        segLineW = floor((stW - firstSep) / hours(24)) + 1;
+        segIndW  = (stW - lineDate(segLineW)) ./ seconds(this.Epoch) + 1;
+
+        for jW = 1:2
+            x_val = datenum(segIndW(jW)*seconds(this.Epoch)+firstSep);
+            y_bottom = baseline(segLineW(jW));
+            y_top = baseline(segLineW(jW)) + .8*layrange;
+            plot([x_val x_val], [y_bottom y_top], 'Color', winLineColor, 'LineWidth', 1.5, 'Parent', h.actiAxis);
+        end
+    end
+end
+
+inColor  = [.4 .6 .8];   % Darker blue for patches inside onoff
+outColor = [.8 .9 .95];  % Light blue for patches outside onoff
+
+hasOnOff = isprop(this, 'SleepSummary') && ~isempty(this.SleepSummary) && ...
+    isfield(this.SleepSummary, 'Meta') && isfield(this.SleepSummary.Meta, 'onoff') && ...
+    ~isempty(this.SleepSummary.Meta.onoff);
+
 if ~isempty(this.Sleep)
     for iS = 1:size(this.Sleep, 1)
         cS = this.Sleep(iS, :);
-        st = this.TimeInfo.StartDate + cS*seconds(this.Epoch);
-        
-        segLine = floor((st - firstSep) / hours(24)) + 1;
-        segInd  = (st - lineDate(segLine)) ./ seconds(this.Epoch) + 1;
-        
-        if segLine(1) == segLine(2)
-            patch(datenum([segInd(1) segInd(1) segInd(2) segInd(2)]*seconds(this.Epoch)+firstSep), ...
-                [baseline(segLine(1)) baseline(segLine(1))+.8*layrange baseline(segLine(2))+.8*layrange baseline(segLine(2))], ...
-                fillColor, 'EdgeColor', fillColor, 'Parent', h.actiAxis);
+
+        % Split sleep interval based on onoff overlaps
+        if ~hasOnOff
+            segments = {cS};
+            colors = {inColor}; % Default color if no onoff
         else
-            patch(datenum([segInd(1)*seconds(this.Epoch)+firstSep segInd(1)*seconds(this.Epoch)+firstSep lineEnd(1) lineEnd(1)]), ...
-                [baseline(segLine(1)) baseline(segLine(1))+.8*layrange baseline(segLine(1))+.8*layrange baseline(segLine(1))], ...
-                fillColor, 'EdgeColor', fillColor, 'Parent', h.actiAxis);
-            patch(datenum([lineDate(1) lineDate(1) segInd(2)*seconds(this.Epoch)+firstSep segInd(2)*seconds(this.Epoch)+firstSep]), ...
-                [baseline(segLine(2)) baseline(segLine(2))+.8*layrange baseline(segLine(2))+.8*layrange baseline(segLine(2))], ...
-                fillColor, 'EdgeColor', fillColor, 'Parent', h.actiAxis);
+            onoff = this.SleepSummary.Meta.onoff;
+            overlap_idx = find(onoff(:,1) <= cS(2) & onoff(:,2) >= cS(1));
+
+            segments = {};
+            colors = {};
+
+            if isempty(overlap_idx)
+                segments{1} = cS;
+                colors{1} = outColor;
+            else
+                curr_st = cS(1);
+                for o = 1:length(overlap_idx)
+                    on_st = onoff(overlap_idx(o), 1);
+                    on_en = onoff(overlap_idx(o), 2);
+
+                    % Chunk entirely before the current onoff period
+                    if curr_st < on_st
+                        segments{end+1} = [curr_st, on_st];
+                        colors{end+1} = outColor;
+                        curr_st = on_st;
+                    end
+
+                    % Chunk inside the current onoff period
+                    end_in = min(cS(2), on_en);
+                    if curr_st < end_in
+                        segments{end+1} = [curr_st, end_in];
+                        colors{end+1} = inColor;
+                        curr_st = end_in;
+                    end
+                end
+
+                % Remaining chunk after the last onoff period
+                if curr_st < cS(2)
+                    segments{end+1} = [curr_st, cS(2)];
+                    colors{end+1} = outColor;
+                end
+            end
+        end
+
+        % Plot each distinct segment
+        for iSeg = 1:length(segments)
+            seg_cS = segments{iSeg};
+            seg_col = colors{iSeg};
+
+            st = this.TimeInfo.StartDate + seg_cS*seconds(this.Epoch);
+            segLine = floor((st - firstSep) / hours(24)) + 1;
+            segInd  = (st - lineDate(segLine)) ./ seconds(this.Epoch) + 1;
+
+            if segLine(1) == segLine(2)
+                patch(datenum([segInd(1) segInd(1) segInd(2) segInd(2)]*seconds(this.Epoch)+firstSep), ...
+                    [baseline(segLine(1)) baseline(segLine(1))+.8*layrange baseline(segLine(2))+.8*layrange baseline(segLine(2))], ...
+                    seg_col, 'EdgeColor', seg_col, 'Parent', h.actiAxis);
+            else
+                patch(datenum([segInd(1)*seconds(this.Epoch)+firstSep segInd(1)*seconds(this.Epoch)+firstSep lineEnd(1) lineEnd(1)]), ...
+                    [baseline(segLine(1)) baseline(segLine(1))+.8*layrange baseline(segLine(1))+.8*layrange baseline(segLine(1))], ...
+                    seg_col, 'EdgeColor', seg_col, 'Parent', h.actiAxis);
+                patch(datenum([lineDate(1) lineDate(1) segInd(2)*seconds(this.Epoch)+firstSep segInd(2)*seconds(this.Epoch)+firstSep]), ...
+                    [baseline(segLine(2)) baseline(segLine(2))+.8*layrange baseline(segLine(2))+.8*layrange baseline(segLine(2))], ...
+                    seg_col, 'EdgeColor', seg_col, 'Parent', h.actiAxis);
+            end
         end
     end
 end

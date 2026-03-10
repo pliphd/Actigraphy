@@ -6,12 +6,13 @@ test_*.m
 acc2counts/tes*.m
 acc2counts/batch*.m
 test/Auto_QC/
-test/Gap
-test/numResults/
+test/Gap/
+test/NumResults/
 test/Sleep/
 test/UPMEMDperCycle/
 test/Circadian/
 test/Raw/
+test/Report/
 test/accel*.csv
 test/bbi*.csv
 test/garmin*

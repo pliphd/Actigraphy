@@ -5,7 +5,7 @@
 # Contents
 
 - [Overview](#overview)
-- [What's New](#whatsnew)
+- [What's New](#whats-new)
 - [Repo Contents](#repo-contents)
 - [System Requirements](#system-requirements)
 - [Installation Guide](#installation-guide)
@@ -24,22 +24,29 @@ While older versions "*ezActi*" and "*ezActi2*" are still available in the repo,
 
 # What's New
 
+## New in Ver. 3.1.0310
+- :fire: Actigraphy analysis report! *ezActi* now supports exporting a professional actigraphy report outlining gap/non-wear information, sleep, and circadian analysis results with supporting visualizations.
+- :fire: The *toolbox* - you don't necessarily need to run the interface. The *Actigraphy* offers a toolbox fully integrated to MATLAB<sup>&copy;</sup>. Check [demo](./demo) for a demonstration of working with the toolbox.
+- :fire: New interactive gap manipulation either through gap view table or actigraphy plot. Supporting selection of gap patches on actigraphy plot or delete a gap through right click menu from actigraphy plot directly.
+- :fire: New sleep results demonstration with primary sleep window (estimated or fixed) shown with identified sleep episodes.
+- Toolbox-wide coding improvements for better management in future.
+
 ## New in Ver. 3.0.1017
 
-- New function featuring the conversion of raw 3-dimensional accelerometer data to activity counts.
+- :fire: New function featuring the conversion of raw 3-dimensional accelerometer data to activity counts.
 - Consolidated approach for nocturnal and daytime sleep detection.
 
 # Repo Contents
 
 - [@acti](./@acti): MATLAB source code for the *acti* class.
-- [@actigraphy](./@actigraphy): MATLAB source code for the *actigraphy* class.
-- [@actigraphy2](./@actigraphy2): MATLAB source code for the *actigraphy2* class. This will eventually replace the *actigraphy* class in future releases.
+- [@actigraphy](./@actigraphy): MATLAB source code for the *actigraphy* class. This is partially retired.
+- [@actigraphy2](./@actigraphy2): MATLAB source code for the *actigraphy2* class. This has mostly replaced the *actigraphy* class for visualization.
 - [@actogram](./@actogram): MATLAB source code for the *actogram* class.
 - [@cosinor](./@cosinor): MATLAB source code for the *cosinor* class.
 - [acc2counts](./acc2counts): MATLAB source code for converting 3-D accelerometer signals to activity counts.
 - [common](./common): MATLAB source code for common dependencies.
-- [ezActi](./ezActi): MATLAB source code for *ezActi*. This is the first release of *ezActi* which has now stopped updating.
-- [ezActi2](./ezActi2): MATLAB source code for the *ezActi2*. This is the second major release of *ezActi* whi has now stopped updating.
+- [ezActi](./ezActi): MATLAB source code for *ezActi*. This is the first release of *ezActi*. The main interface has now stopped updating. Some dependencies are carried over to future updates.
+- [ezActi2](./ezActi2): MATLAB source code for the *ezActi2*. This is the second major release of *ezActi*. The main interface has now stopped updating. Some dependencies are carriered over to future updates.
 - [ezActi3](./ezActi3): MATLAB source code for the *ezActi3*. This is the current release of *ezActi*.
 - [rhythm](./rhythm): MATLAB source code for dependencies related to rhythmicity analysis.
 - [test](./test): test data.
@@ -69,15 +76,16 @@ The App has been tested on the following systems.
 
 ### MATLAB platform and toolboxes
 
-The App is developed in the MATLAB platform. MATLAB version R2022a or newer is required. It may be able to run in older versions of MATLAB, but performance/functions are not guaranteed.
+The App is developed in the MATLAB platform. MATLAB version R2025b or newer is required. It may be able to run in older versions of MATLAB, but performance/functions are not guaranteed.
 
-The curreent release is developed and tested in MATLAB R2024a.
+The curreent release is developed and tested in MATLAB R2025b.
 
 The following toolboxes are required.
 
 - Signal Processing Toolbox
 - Deep Learning Toolbox
 - Statistics and Machine Learning Toolbox
+- Report Generator Toolbox
 
 # Installation Guide
 

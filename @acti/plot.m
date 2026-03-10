@@ -1,33 +1,53 @@
 function h = plot(this, varargin)
 %PLOT plot an ACTI object
 % 
-% $Author: Peng Li
-% $Date:   Dec 02, 2020
+% $Author:  Peng Li
+% $Date:    Dec 02, 2020
+% $Modif.:  Dec 08, 2025
+%               Add Diary section.
+%               Remove Nap as essentially it should be included in Sleep
+%           Feb 15, 2026
+%               Enable showing primary sleep window estimation if available
+%           Feb 19, 2026
+%               Call refresh* functions
+%           Feb 27, 2026
+%               Improve input parser to allow more parameters
 % 
 
-% axes
-if nargin == 2
-    if isa(varargin{1}, 'actigraphy2')
-        if isempty(findobj('Tag', 'actigraphyFig'))
-            h = actigraphy2(this);
-        else
-            h = varargin{1};
-            h.hostApp = this;
-            cla(h.actiAxis);
-        end
-    else
-        if ~isempty(findobj('Tag', 'actigraphyFig'))
-            delete(findobj('Tag', 'actigraphyFig'));
-        end
-        h = actigraphy2(this);
-    end
+% input parser
+if nargin > 1 && isa(varargin{1}, 'actigraphy2')
+    providedHandle = varargin{1};
+    nameValueArgs  = varargin(2:end);
 else
-    h = actigraphy2(this);
+    providedHandle = [];
+    nameValueArgs  = varargin;
+end
+
+p = inputParser;
+addParameter(p, 'Visible', true, @islogical);
+parse(p, nameValueArgs{:});
+
+createNew = true;
+if ~isempty(providedHandle)
+    if ~isempty(findobj('Tag', 'actigraphyFig'))
+        createNew = false; % valid handle + figure still exists → reuse
+    end
+end
+
+if createNew
+    h = actigraphy2(this, 'Visible', p.Results.Visible);
+else
+    h = providedHandle;
+    h.hostApp = this;
+    cla(h.actiAxis);
 end
 
 % show range
 yrange = [min(this.Data(:, end)) max(this.Data(:, end))];
 yrange = [yrange(1) - .2*diff(yrange), yrange(2) + .2*diff(yrange)];
+ptH    = diff(yrange)/50;
+h.Decoration.YLim = yrange;
+h.Decoration.YAdjust = ptH;
 
 % plot signal
 set(h.actiAxis, 'NextPlot', 'add');
@@ -43,41 +63,15 @@ hSep = plot(h.actiAxis, [StartBorder; StartBorder], Seperator, ...
     'LineStyle', '--', 'LineWidth', 1);
 xlabel(h.actiAxis, 'Points');
 
-% plot gap
-if ~isempty(this.Gap)
-    for iG = size(this.Gap, 1):-1:1
-        hGap(iG) = patch('Parent', h.actiAxis, ...
-            'XData', [this.Gap(iG, 1) this.Gap(iG, 1) this.Gap(iG, 2) this.Gap(iG, 2)], ...
-            'YData', [yrange(1) yrange(2) yrange(2) yrange(1)], ...
-            'FaceColor', 'm', 'EdgeColor', 'm', 'FaceAlpha', 0.1);
-        hGapText(iG) = text(h.actiAxis, this.Gap(iG, 1), ...
-            yrange(2) - ((iG-1)./size(this.Gap, 1))*diff(yrange), ...
-            ['Gap: # ' num2str(iG)], 'Color', 'm', ...
-            'FontSize', 6);
-    end
-end
-
-% plot sleep
-ptH = diff(yrange)/50;
-if ~isempty(this.Sleep)
-    for iG = size(this.Sleep, 1):-1:1
-        hSleep(iG) = patch('Parent', h.actiAxis, ...
-            'XData', [this.Sleep(iG, 1) this.Sleep(iG, 1) this.Sleep(iG, 2) this.Sleep(iG, 2)], ...
-            'YData', [yrange(1)+ptH yrange(1)+2*ptH yrange(1)+2*ptH yrange(1)+ptH], ...
-            'FaceColor', 'b', 'EdgeColor', 'b');
-        hSleepText(iG) = text(h.actiAxis, this.Sleep(iG, 1), ...
-            yrange(1) + ptH/2, ...
-            ['Sleep: # ' num2str(iG)], 'Color', 'b', ...
-            'FontSize', 6);
-    end
-end
+% refresh dynamic elements
+this.refreshGaps(h);
+this.refreshPrimarySleep(h);
+this.refreshSleep(h);
+this.refreshDiary(h);
+this.refreshCircadian(h);
 
 % switch layers
-child = h.actiAxis.Children;
-type  = get(child, 'Type');
-chd1  = child(strcmpi(type, 'patch'));
-chd2  = child(~strcmpi(type, 'patch'));
-h.actiAxis.Children = [chd2; chd1];
+uistack(findobj(h.actiAxis, 'Type', 'patch'), 'bottom');
 
 % range set
 if yrange(2) > yrange(1) % to avoid nan
@@ -91,8 +85,12 @@ ytick(ytick < 0) = [];
 ytick = [yrange(1) + ptH*1.5 yrange(1) + ptH*4.5 ytick];
 h.actiAxis.YTick = ytick;
 
+% reset exponent to 0 in case the following change removes the exponent
+% label
+h.actiAxis.YAxis.Exponent = 0;
+
 yticklabel = h.actiAxis.YTickLabel;
-yticklabel(1:2) = {'\color{blue}Sleep', '\color{cyan}Nap'};
+yticklabel(1:2) = {'\color{cyan}Diary', '\color{blue}Sleep'};
 h.actiAxis.YTickLabel = yticklabel;
 
 zoom('reset');
@@ -105,7 +103,7 @@ if h.hostApp.timeSet
     peerXTick = h.actiAxis.XTick;
     xTick     = this.TimeInfo.StartDate + seconds(this.Epoch).*(peerXTick - peerXTick(1));
     h.shallowAxis.XTick      = peerXTick;
-    h.shallowAxis.XTickLabel = datestr(xTick, 'dd-mmm-yyyy HH:MM');
+    h.shallowAxis.XTickLabel = string(xTick, 'MMM dd, yyyy HH:mm');
     h.shallowAxis.XTickLabelRotation = 10;
     
     xlabel(h.shallowAxis, 'Time');
@@ -113,4 +111,9 @@ else
     h.shallowAxis.Visible = 'off';
     h.actiAxis.Box        = 'on';
 end
+
+% enable floaters
+axtoolbar(h.actiAxis, {'export', 'zoomin', 'zoomout', 'restoreview', 'pan', 'datacursor'});
+h.shallowAxis.Toolbar.Visible = 'off';
+h.actiAxis.Toolbar.Visible    = 'on';
 end

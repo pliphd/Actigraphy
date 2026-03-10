@@ -2,10 +2,12 @@
 % 
 % Descriptions tba
 % 
-%   $Author:  Peng Li, Ph.D.
+%   $Author:    Peng Li, Ph.D.
 %                   Division of Sleep Medicine, Brigham & Women's Hospital
 %                   Division of Sleep Medicine, Harvard Medical School
-%   $Date:    April 07, 2020
+%   $Date:      April 07, 2020
+%   $Modif.:    Mar 10, 2026
+%                   Fix a bug (instead of calling load data when click run, call within auto)
 % 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 %                      (C) Peng Li 2020 -
@@ -154,12 +156,26 @@ classdef dfaConfig < handle
 
                 % move on
                 app.hostApp.startIndex = app.hostApp.startIndex + 1;
+
                 if app.hostApp.startIndex > length(app.hostApp.fileList)
                     app.hostApp.statusFeed_("DFA: finished the last file (" + app.hostApp.currentFileName + "!");
 
                     % return pointer
                     app.hostApp.startIndex = app.hostApp.startIndex - 1;
                     return;
+                end
+
+                app.hostApp.ListBox.Value   = app.hostApp.startIndex;
+                app.hostApp.currentFileName = app.hostApp.fileList{app.hostApp.startIndex};
+
+                temp = strsplit(app.hostApp.currentFileName, '.');
+                app.hostApp.currentFileNameNoExt = temp{1};
+
+                app.hostApp.loadActi_;
+
+                % scroll list box if needed
+                if app.hostApp.startIndex > 16 % hard coded here
+                    scroll(app.hostApp.ListBox, app.hostApp.startIndex);
                 end
             end
             
@@ -169,12 +185,6 @@ classdef dfaConfig < handle
             % send message to host app
             if ~app.hostApp.dataDefined
                 return;
-            end
-            
-            app.hostApp.loadData;
-            
-            if app.hostApp.importedGap
-                app.hostApp.loadGap;
             end
             
             % time series

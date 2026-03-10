@@ -4,6 +4,13 @@ function this = cosinorActi(this)
 % 
 % $Author:  Peng Li
 % $Date:    Nov 11, 2022
+% $Modif.:  Feb 20, 2026
+%               Asign fitted data to Circadian property for consistency
+%                   with Sleep and Gap
+%           Feb 26, 2026
+%               Phase in hour keeps abs value
+%           Mar 08, 2026
+%               Add message output to keep consistent
 % 
 
 period = this.CosinorInfo.HarmonicsInHour;
@@ -48,6 +55,10 @@ if length(x)*epoch/3600 < minLen * period(1)
         array2table(p_h,    'VariableNames', "phase_" + string(period) + "_in_hour") ...
         array2table(p_h_lb, 'VariableNames', "phase_lb_" + string(period) + "_in_hour") ...
         array2table(p_h_ub, 'VariableNames', "phase_ub_" + string(period) + "_in_hour")];
+
+    this.message.content = 'Min. length is not met. Cosinor analysis is skipped.';
+    this.message.type = 'warning';
+    this.analysis.cosinor = 0;
     return;
 end
 
@@ -84,6 +95,9 @@ c = c.ci;
 % backup c
 this.CosinorInfo.UserData = c;
 
+% propogate to Circadian for lagecy plot
+this.Circadian = c.DataFitted;
+
 amp    = c.Amplitude;
 amp_lb = c.AmplitudeCI(:, 1);
 amp_ub = c.AmplitudeCI(:, 2);
@@ -92,9 +106,9 @@ pha    = c.Acrophase;
 pha_lb = c.AcrophaseCI(:, 1);
 pha_ub = c.AcrophaseCI(:, 2);
 
-p_h    = c.Acrophase ./ 360 .* period(:);
-p_h_lb = c.AcrophaseCI(:, 1) ./ 360 .* period(:);
-p_h_ub = c.AcrophaseCI(:, 2) ./ 360 .* period(:);
+p_h    = abs(c.Acrophase) ./ 360 .* period(:);
+p_h_lb = abs(c.AcrophaseCI(:, 1)) ./ 360 .* period(:);
+p_h_ub = abs(c.AcrophaseCI(:, 2)) ./ 360 .* period(:);
 
 mesor    = c.Mesor;
 mesor_lb = c.MesorCI(1);
@@ -110,3 +124,7 @@ this.CosinorSummary = [table(mean_activity, std_activity, mesor, mesor_lb, mesor
     array2table(p_h',    'VariableNames', "phase_" + string(period) + "_in_hour") ...
     array2table(p_h_lb', 'VariableNames', "phase_lb_" + string(period) + "_in_hour") ...
     array2table(p_h_ub', 'VariableNames', "phase_ub_" + string(period) + "_in_hour")];
+
+this.message.content = 'Cosinor analysis is completed.';
+this.message.type = 'success';
+this.analysis.cosinor = 1;

@@ -2,8 +2,10 @@
 % 
 % Descriptions tba
 % 
-%   $Author:  Peng Li, Ph.D.
-%   $Date:    Jan 01, 2022
+%   $Author:    Peng Li, Ph.D.
+%   $Date:      Jan 01, 2022
+%   $Modif.:    Feb 27, 2026
+%                   Enable invisible instance to allow report generator
 % 
 % +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 %                      (C) Peng Li 2019 -
@@ -22,18 +24,33 @@ classdef actogram < handle
     %% construction and deletion
     methods (Access = public)
         function app = actogram(varargin)
-            if nargin == 1
-                app.hostApp = varargin{1};
+            % parse inputs
+            if nargin == 0
+                hostApp = [];
+                nameValueArgs = {};
+            elseif ischar(varargin{1}) || isstring(varargin{1})
+                % Called as actigraphy2('Hidden', true) or with other name-value pairs
+                hostApp = [];
+                nameValueArgs = varargin;
             else
-                app.hostApp = [];
+                % Called as actigraphy2(this) or actigraphy2(this, 'Hidden', true)
+                hostApp = varargin{1};
+                nameValueArgs = varargin(2:end);
             end
+
+            app.hostApp = hostApp;
+
+            p = inputParser;
+            addParameter(p, 'Visible', true, @islogical);
+            parse(p, nameValueArgs{:});
             
             pos = CenterFig(.8/2, 1.3/2, 'norm');
             app.actigraphyFig = figure('Color', 'w', ...
                 'Units', 'norm', ...
                 'Position', pos, ...
                 'Name', 'Actogram', ...
-                'NumberTitle', 'off');
+                'NumberTitle', 'off', ...
+                'Visible', p.Results.Visible);
             
             app.actigraphyFig.MenuBar = 'none';
             app.actigraphyFig.Tag     = 'actogramFig';
