@@ -26,7 +26,7 @@ While older versions "*ezActi*" and "*ezActi2*" are still available in the repo,
 
 ## New in Ver. 3.1.0310
 - :fire: Actigraphy analysis report! *ezActi* now supports exporting a professional actigraphy report outlining gap/non-wear information, sleep, and circadian analysis results with supporting visualizations.
-- :fire: The *toolbox* - you don't necessarily need to run the interface. The *Actigraphy* offers a toolbox fully integrated to MATLAB<sup>&copy;</sup>. Check [demo](./demo) for a demonstration of working with the toolbox.
+- :fire: The *toolbox* - you don't necessarily need to run the interface. The *Actigraphy* offers a toolbox fully integrated to MATLAB<sup>&copy;</sup>. Check [demo](./demo.m) for a demonstration of working with the toolbox.
 - :fire: New interactive gap manipulation either through gap view table or actigraphy plot. Supporting selection of gap patches on actigraphy plot or delete a gap through right click menu from actigraphy plot directly.
 - :fire: New sleep results demonstration with primary sleep window (estimated or fixed) shown with identified sleep episodes.
 - Toolbox-wide coding improvements for better management in future.

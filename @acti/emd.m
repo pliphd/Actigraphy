@@ -3,7 +3,8 @@ function this = emd(this)
 % 
 % $Author:  Peng Li
 % $Date:    Mar 09, 2022
-% $Modif.:  
+% $Modif.:  Mar 24, 2026
+%               Revise to enable per cycle output
 % 
 
 period = this.EMDInfo.TargetComponent;
@@ -44,19 +45,22 @@ sdAmplitude   = std(cycleAmplitude(1:minCycle), 'omitnan');
 meanPeriod    = mean(cycleLength(1:minCycle), 'omitnan');
 sdPeriod      = std(cycleLength(1:minCycle), 'omitnan');
 
+% Mar 24, 2026
+% datenum is not recommended and suspect that it will be discontinued
+% use datetime to improve compatibility
 if this.timeSet
-    staTime = datenum(this.TimeInfo.StartDate);
+    staTime = this.TimeInfo.StartDate;
     verbose = sprintf('%s\n', 'Phase is in actual time.');
 else
     % fake start time
-    staTime = 0;
+    staTime = datetime(0, 1, 1, 0, 0, 0); % this corresponds to datenum 0
     verbose = sprintf('%s\n', 'Phase is w.r.t. 00:00:00 as start time.');
 end
 
-endTime = (length(x)-1)*epoch / (3600*24) + staTime;
+endTime = days((length(x)-1)*epoch / (3600*24)) + staTime;
 t       = linspace(staTime, endTime, length(x))';
 
-peakTime      = datetime(t(cycleStart), 'ConvertFrom', 'datenum');
+peakTime      = t(cycleStart);
 phaseInHour   = hour(peakTime) + minute(peakTime)/60 + second(peakTime)/3600;
 meanPhase     = mean(phaseInHour, 'omitnan');
 sdPhase       = std(phaseInHour, 'omitnan');
@@ -75,7 +79,10 @@ verbose = [verbose ...
 
 this.EMDSummary = table(meanAmplitude, sdAmplitude, meanPeriod, sdPeriod, meanPhase, sdPhase, cycleSD);
 
-this.EMDInfo.UserData = verbose;
+this.EMDInfo.UserData.Verbose = verbose;
+this.EMDInfo.UserData.CycleLength = cycleLength;
+this.EMDInfo.UserData.PhaseInHour = phaseInHour;
+this.EMDInfo.UserData.CycleAmplitude = cycleAmplitude;
 
 this.message.content = 'EMD analysis is completed.';
 this.message.type = 'success';
