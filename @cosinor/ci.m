@@ -122,7 +122,6 @@ else
         if p_upper < 0, p_upper = p_upper + 360; end, p_upper = -p_upper;
     else
         allPhase(allPhase < 0) = allPhase(allPhase < 0) + 360;
-        allPhase = -allPhase;
         p_lower  = min(allPhase);
         p_upper  = max(allPhase);
     end

@@ -30,6 +30,10 @@ function this = fit(this)
 % $Date:    Dec 13, 2021
 % $Modif.:  Nov 10, 2022
 %               add verbose
+%           Apr 10, 2026
+%               switch to the mathematically clearly notation
+%                   y = M + Acos(wt-theta) ---- theta is the phase, and
+%                       wt-theta gives the shift direction to right
 % 
 
 y = this.Data;
@@ -75,7 +79,9 @@ gammaCI  = bint(numel(betahat)+1:end-1, :);
 
 theta = atan2d(gammahat, betahat);         % atan2d gives range [-180, 180]
 theta(theta < 0) = theta(theta < 0) + 360; % move negative theta to [180, 360]
-theta = -theta;                            % gamma is -sin(theta) or sin(-theta)
+
+% get rid of the following line as 
+% theta = -theta;                            % gamma is -sin(theta) or sin(-theta)
 
 this.Amplitude = sqrt(betahat.^2 + gammahat.^2);
 this.Acrophase = theta;
@@ -103,7 +109,7 @@ expr    = ['Y = ' sprintf('%.2f', b(end))];
 for iC   = 1:length(this.CycleLengthInHour)
     AC   = sqrt(bComp(iC, 1)^2 + bComp(iC, 2)^2);
     
-    if theta(iC) < 0
+    if theta(iC) > 0
         pm = ' - ';
     else
         pm = ' + ';

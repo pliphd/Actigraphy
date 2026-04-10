@@ -47,16 +47,16 @@ plot(h, x, y, 'k', 'LineWidth', 1);
 
 % mark time and degrees
 timeVector   = datestr(datetime('00:00', 'InputFormat', 'HH:mm'):hours(3):datetime('21:00', 'InputFormat', 'HH:mm'), 'HH:MM');
-degreeVector = 0:-45:-315;
+degreeVector = 0:45:315;
 rT = 1.6*this.AmplitudeCI(2);
 rD = 1.9*this.AmplitudeCI(2);
 for iT = 1:numel(degreeVector)
-    text(h, rT*sin(-degreeVector(iT)/180*pi), rT*cos(-degreeVector(iT)/180*pi), timeVector(iT, :), ...
-        'Rotation', degreeVector(iT), ...
+    text(h, rT*sin(degreeVector(iT)/180*pi), rT*cos(degreeVector(iT)/180*pi), timeVector(iT, :), ...
+        'Rotation', -degreeVector(iT), ...
         'HorizontalAlignment', 'center');
     
-    text(h, rD*sin(-degreeVector(iT)/180*pi), rD*cos(-degreeVector(iT)/180*pi), num2str(degreeVector(iT))+"^{\circ}", ...
-        'Rotation', degreeVector(iT), ...
+    text(h, rD*sin(degreeVector(iT)/180*pi), rD*cos(degreeVector(iT)/180*pi), num2str(degreeVector(iT))+"^{\circ}", ...
+        'Rotation', -degreeVector(iT), ...
         'HorizontalAlignment', 'center');
 end
 
@@ -65,24 +65,24 @@ end
 ri2 = 1.4*this.AmplitudeCI(2);
 ro2 = 1.7*this.AmplitudeCI(2);
 for iM = 1:numel(degreeVector)
-    plot(h, [ri2*sin(-degreeVector(iM)/180*pi) ri*sin(-degreeVector(iM)/180*pi)], ...
-        [ri2*cos(-degreeVector(iM)/180*pi) ri*cos(-degreeVector(iM)/180*pi)], ...
+    plot(h, [ri2*sin(degreeVector(iM)/180*pi) ri*sin(degreeVector(iM)/180*pi)], ...
+        [ri2*cos(degreeVector(iM)/180*pi) ri*cos(degreeVector(iM)/180*pi)], ...
         'k', 'LineWidth', 1);
-    plot(h, [ro2*sin(-degreeVector(iM)/180*pi) ro*sin(-degreeVector(iM)/180*pi)], ...
-        [ro2*cos(-degreeVector(iM)/180*pi) ro*cos(-degreeVector(iM)/180*pi)], ...
+    plot(h, [ro2*sin(degreeVector(iM)/180*pi) ro*sin(degreeVector(iM)/180*pi)], ...
+        [ro2*cos(degreeVector(iM)/180*pi) ro*cos(degreeVector(iM)/180*pi)], ...
         'k', 'LineWidth', 1);
 end
 
 % short ticks 1.45-1.5 1.75-1.8 r, per 15 degrees
-minorDegreeVector = 0:-15:-345;
+minorDegreeVector = 0:15:345;
 ri2 = 1.45*this.AmplitudeCI(2);
 ro2 = 1.75*this.AmplitudeCI(2);
 for iM = 1:numel(minorDegreeVector)
-    plot(h, [ri2*sin(-minorDegreeVector(iM)/180*pi) ri*sin(-minorDegreeVector(iM)/180*pi)], ...
-        [ri2*cos(-minorDegreeVector(iM)/180*pi) ri*cos(-minorDegreeVector(iM)/180*pi)], ...
+    plot(h, [ri2*sin(minorDegreeVector(iM)/180*pi) ri*sin(minorDegreeVector(iM)/180*pi)], ...
+        [ri2*cos(minorDegreeVector(iM)/180*pi) ri*cos(minorDegreeVector(iM)/180*pi)], ...
         'k');
-    plot(h, [ro2*sin(-minorDegreeVector(iM)/180*pi) ro*sin(-minorDegreeVector(iM)/180*pi)], ...
-        [ro2*cos(-minorDegreeVector(iM)/180*pi) ro*cos(-minorDegreeVector(iM)/180*pi)], ...
+    plot(h, [ro2*sin(minorDegreeVector(iM)/180*pi) ro*sin(minorDegreeVector(iM)/180*pi)], ...
+        [ro2*cos(minorDegreeVector(iM)/180*pi) ro*cos(minorDegreeVector(iM)/180*pi)], ...
         'k');
 end
 
@@ -92,7 +92,7 @@ plot(h, 0, 0, 'x', 'MarkerSize', 5, 'Color', 'k');
 %% results specific modifications
 % show indicator lines to better match the arrow to clock ticks
 plot(h, [0 0], [0 ri], 'k--');
-plot(h, [0 ri*sin(-this.Acrophase/180*pi)],  [0 ri*cos(-this.Acrophase/180*pi)], 'k--');
+plot(h, [0 ri*sin(this.Acrophase/180*pi)],  [0 ri*cos(this.Acrophase/180*pi)], 'k--');
 
 % add ticks on indicator lines
 atick = 0:this.Amplitude/2:ri;
@@ -108,7 +108,7 @@ plot(h, this.ErrorEllipse(:, 1), this.ErrorEllipse(:, 2), 'Color', 'b');
 quiver(h, 0, 0, this.gammahat, this.betahat, 'b-', 'LineWidth', 1, 'AutoScale', 'off', 'MaxHeadSize', .5);
 
 % plot a curve to help read amplitude from amplitude ticks
-t = linspace(0, -this.Acrophase, 100);
+t = linspace(0, this.Acrophase, 100);
 plot(h, this.Amplitude*sin(t/180*pi), this.Amplitude*cos(t/180*pi), 'k--');
 
 % generate text message
@@ -118,8 +118,8 @@ tamp = "A = " + sprintf('%.2f', this.Amplitude);
 % show confidence region
 if ~isnan(this.AmplitudeCI(1))
     t = linspace(this.AcrophaseCI(1), this.AcrophaseCI(2), 500);
-    x = ri*sin(-t/180*pi);
-    y = ri*cos(-t/180*pi);
+    x = ri*sin(t/180*pi);
+    y = ri*cos(t/180*pi);
     fill(h, [0 x 0], [0 y 0], [.9 .9 .9]);
     hc = h.Children;
     h.Children = [hc(2:end); hc(1)];
