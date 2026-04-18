@@ -35,6 +35,11 @@ function this = sleepDet(this)
 %                       of truncated as happened before)
 %                   (5) partially nights will be flagged and will not be
 %                       contributing to summary results
+%           Apr 16, 2026
+%               primarySleepSense may give extreme results when the data
+%                   does not show regular sleep-wake patterns. add
+%                   safeguard to mark abnormal window (>16 hours or <2
+%                   hours primary sleep window)
 % 
 
 x   = this.Data;
@@ -63,8 +68,10 @@ switch this.SleepInfo.Option
         this.SleepWindow = ~mask;
 end
 
+clockTime = this.TimeInfo.StartDate + seconds(this.Time);
+
 % calculate sleep metrics
-res = calcSleep(sleepSeries, mask, this.GapSeries, this.Epoch);
+res = calcSleep(sleepSeries, mask, this.GapSeries, this.Epoch, clockTime);
 
 % pack results to class
 % 1. sleep series and episodes
@@ -72,24 +79,13 @@ this.SleepSeries = res.sleepSeries;
 this.Sleep       = detConstantOne(this.SleepSeries);
 
 % 2. sleep onset and offset in clock hours
-clockTime = this.TimeInfo.StartDate + seconds(this.Time);
+this.SleepSummary.PrimaryOnset = res.onoff(:, 1);
+this.SleepSummary.PrimaryOffset = res.onoff(:, 2);
 
-sleepOnset = res.onoff(:, 1);
-if res.is_partial_night(1)
-    sleepOnset(1) = [];
-end
-this.SleepSummary.PrimaryOnset = sleepOnset;
-
-sleepOffset = res.onoff(:, 2);
-if res.is_partial_night(end)
-    sleepOffset(end) = [];
-end
-this.SleepSummary.PrimaryOffset = sleepOffset;
-
-avgOnset  = circAvg(seconds(timeofday(clockTime(sleepOnset))));
+avgOnset  = res.avg_onset;
 avgOnset.Format = 'hh:mm:ss';
 
-avgOffset = circAvg(seconds(timeofday(clockTime(sleepOffset))));
+avgOffset = res.avg_offset;
 avgOffset.Format = 'hh:mm:ss';
 
 % 3. valid start and end indices used to calculate summary statistics
@@ -98,7 +94,7 @@ this.SleepSummary.ValidIndex = res.valid_idx;
 % 4. summary report
 this.SleepSummary.Report = table(res.total_sleep_min_24h/60, ...
     avgOnset, avgOffset, res.nocturnal_sleep_min/60, res.waso_min, ...
-    res.nap_duration_per_day_min, res.nap_freq_per_day, ...
+    res.nap_duration_per_day_min/60, res.nap_freq_per_day, ...
     'VariableNames', {'total_sleep_h', ...
         'primary_onset', 'primary_offset', 'primary_sleep_h', 'waso_min', ...
         'nap_h', 'nap_times'});
@@ -107,6 +103,7 @@ this.SleepSummary.Report = table(res.total_sleep_min_24h/60, ...
 resMeta.nightly_duration = res.nightly_duration;
 resMeta.nightly_was = res.nightly_waso;
 resMeta.is_partial_night = res.is_partial_night;
+resMeta.is_abnormal_window = res.is_abnormal_window;
 resMeta.onoff = res.onoff;
 resMeta.message = res.message;
 this.SleepSummary.Meta = resMeta;
@@ -117,7 +114,7 @@ this.analysis.sleep = 1;
 end
 
 % helper functions
-function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec)
+function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec, clockTime)
     % INPUTS:
     % sleepSeries:  Binary vector (0=wake, 1=sleep)
     % mask:         Binary vector (Primary Sleep Window)
@@ -128,6 +125,10 @@ function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec)
     same_sleep_thre_min = 5;
     same_sleep_points   = (same_sleep_thre_min * 60) / epoch_sec;
     nap_thre            = 5 * 60 / epoch_sec;
+
+    % SAFEGUARD PARAMETERS
+    max_window_h = 16; % Max reasonable primary sleep window (hours)
+    min_window_h = 2;  % Min reasonable primary sleep window (hours)
 
     % 1. SMOOTH SLEEP (Bridge gaps < 3 min)
     bridgedSleep = bridge_same_sleep(sleepSeries, same_sleep_points);
@@ -148,6 +149,7 @@ function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec)
     
     % Flag for partial nights (True if incomplete or touching a gap)
     is_partial_night    = false(num_nights, 1);
+    is_abnormal_window  = false(num_nights, 1); % --- SAFEGUARD FLAG ---
     
     % Track which sleep bouts are nocturnal/primary (to separate Naps later)
     bout_is_nocturnal   = false(num_bouts, 1);
@@ -158,6 +160,13 @@ function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec)
     for iN = 1:num_nights
         m_start = mask_starts(iN);
         m_end   = mask_ends(iN);
+
+        % --- SAFEGUARD CHECK: Window Duration ---
+        window_duration_h = (m_end - m_start + 1) * epoch_sec / 3600;
+        if window_duration_h > max_window_h || window_duration_h < min_window_h
+            is_abnormal_window(iN) = true;
+            is_partial_night(iN) = true; % Force exclusion from summary stats
+        end
         
         % --- CRITERIA 1: Check Recording Boundaries ---
         if m_start == 1 || m_end == length(sleepSeries)
@@ -233,6 +242,7 @@ function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec)
         nocturnal_sleep_min(inv_idx) = [];
         waso_min(inv_idx) = [];
         is_partial_night(inv_idx) = [];
+        is_abnormal_window(inv_idx) = [];
     end
     
     % 5. NAP ANALYSIS
@@ -276,10 +286,26 @@ function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec)
         msg = 'All nights appeared to be partial/truncated or contain gaps.';
         avg_nocturnal_sleep = NaN;
         avg_waso = NaN;
+        avg_onset = seconds(NaN);
+        avg_offset = seconds(NaN);
     else
-        msg = ['Sleep summary data were aggragated from ' num2str(sum(~is_partial_night)) ' nights.'];
+        msg = ['Sleep summary data were aggregated from ' num2str(sum(~is_partial_night)) ' nights.'];
         avg_nocturnal_sleep = mean(nocturnal_sleep_min(valid_nights_idx));
         avg_waso = mean(waso_min(valid_nights_idx));
+
+        valid_onsets = onset_indices(valid_nights_idx);
+        valid_offsets = offset_indices(valid_nights_idx);
+
+        avg_onset = circAvg(seconds(timeofday(clockTime(valid_onsets))));
+        avg_offset = circAvg(seconds(timeofday(clockTime(valid_offsets))));
+    end
+
+    % --- SAFEGUARD MESSAGE GENERATION ---
+    abnormal_count = sum(is_abnormal_window);
+    if abnormal_count > 0
+        msg = [msg, ' [WARNING: ', num2str(abnormal_count), ...
+               ' sleep window(s) had abnormal lengths (> ', num2str(max_window_h), ...
+               'h or < ', num2str(min_window_h), 'h) and were excluded. Consider checking primarySleepSense.]'];
     end
     
     % 6.B. Total 24h Sleep
@@ -356,6 +382,8 @@ function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec)
     res.waso_min = avg_waso;
     res.nap_freq_per_day = nap_freq_per_day;
     res.nap_duration_per_day_min = nap_duration_per_day;
+    res.avg_onset = avg_onset;
+    res.avg_offset = avg_offset;
     
     % Metadata
     res.sleepSeries = full_valid_sleep;
@@ -363,6 +391,7 @@ function res = calcSleep(sleepSeries, mask, gapSeries, epoch_sec)
     res.nightly_waso = waso_min;
     res.valid_days_used = valid_days;
     res.is_partial_night = is_partial_night;
+    res.is_abnormal_window = is_abnormal_window;
     res.valid_idx = [start_valid_idx, end_valid_idx];
     res.onoff = [onset_indices offset_indices];
     res.message = msg;

@@ -1,11 +1,13 @@
 function refreshSleep(this, actigraphy)
 % REFRESHSLEEP Update sleep elements from ACTIGRAPHY
-% 
+%
 % $Author:  Peng Li
 % $Date:    Feb 19, 2026
 % $Modif.:  Feb 20, 2026
 %               Facilitate lagecy plot (patches only)
-% 
+%           Apr 16, 2026
+%               Added gray-out patches for intermediate partial/abnormal nights
+%
 
 ax = actigraphy.actiAxis;
 ptH = actigraphy.Decoration.YAdjust;
@@ -58,6 +60,28 @@ if ~isempty(this.Sleep)
         'XData', [this.SleepSummary.ValidIndex(2) this.SleepSummary.ValidIndex(2) length(this.Point) length(this.Point)], ...
         'YData', [yrange(1)+3*ptH yrange(1)+4*ptH yrange(1)+4*ptH yrange(1)+3*ptH], ...
         'FaceColor', [0.8 0.8 0.8], 'EdgeColor', [0.8 0.8 0.8], 'Tag', 'ExcludedPatch');
+
+    % Gray out intermediate partial/abnormal nights
+    if isfield(this.SleepSummary, 'Meta') && isfield(this.SleepSummary.Meta, 'is_partial_night')
+        partial_flags = this.SleepSummary.Meta.is_partial_night;
+        onoff_idx = this.SleepSummary.Meta.onoff; % Contains adjusted onset/offset pairs
+
+        for iN = 1:length(partial_flags)
+            % If this specific night was flagged as partial or abnormal
+            if partial_flags(iN)
+                pStart = onoff_idx(iN, 1);
+                pEnd   = onoff_idx(iN, 2);
+
+                % Only draw if we have valid integer indices for start/end
+                if ~isnan(pStart) && ~isnan(pEnd)
+                    patch('Parent', ax, ...
+                        'XData', [pStart pStart pEnd pEnd], ...
+                        'YData', [yrange(1)+3*ptH yrange(1)+4*ptH yrange(1)+4*ptH yrange(1)+3*ptH], ...
+                        'FaceColor', [0.8 0.8 0.8], 'EdgeColor', [0.8 0.8 0.8], 'Tag', 'ExcludedPatch');
+                end
+            end
+        end
+    end
 end
 
 % switch layers
