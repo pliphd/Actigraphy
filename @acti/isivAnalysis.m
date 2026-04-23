@@ -18,20 +18,22 @@ scale  = this.ISIVInfo.TimeScaleInMin;
 x      = this.Data;
 x(this.GapSeries) = nan;
 
+% init
+defVal     = nan(numel(this.ISIVInfo.TimeScaleInMin), 1);
+rep_detail = table(defVal, defVal, defVal, defVal, defVal, defVal, ...
+    'VariableNames', {'timescale', 'is', 'iv', 'current_period', 'perc_missing_data', 'perc_missing_bin'});
+
 % check if signal is long enough for FixedCycles
 avg_period = mean(period); % most of the time, period will be a scalar. period is a vector only when we want to do periodogram for max IS and best period
 n_cycles   = length(x) * epoch / 60 / avg_period;
 if n_cycles < cycle
+    this.ISIVSummary.Report = rep_detail(1, :);
+    this.ISIVSummary.ReportDetail = rep_detail;
     this.message.content = sprintf('Signal is too short: %.2f cycles < %d required. ISIV analysis skipped.', n_cycles, cycle);
     this.message.type = 'warning';
     this.analysis.isiv = 0;
     return;
 end
-
-% init
-defVal     = nan(numel(this.ISIVInfo.TimeScaleInMin), 1);
-rep_detail = table(defVal, defVal, defVal, defVal, defVal, defVal, ...
-    'VariableNames', {'timescale', 'is', 'iv', 'current_period', 'perc_missing_data', 'perc_missing_bin'});
 
 rep   = rep_detail(1, :);
 isAll = nan;
