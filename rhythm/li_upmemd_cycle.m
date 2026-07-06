@@ -1,9 +1,11 @@
-function [imfStart, imfPeriod, imfAmplitude] = li_upmemd_cycle(comp, fs)
+function [imfStart, imfPeriod, imfAmplitude, imfNadir] = li_upmemd_cycle(comp, fs)
 %LI_UPMEMD_CYCLE calculate cycle start point, period, and amplitude of each
 % cycle from the component extracted using LI_UPMEMD
 % 
 % $Author:  Peng Li, Ph.D.
 % $Date:    Mar 24, 2023
+% $Modif.:  Jul 06, 2026
+%               Allow nadir output (phase = pi)
 % 
 
 % find local peaks and cycle lengths
@@ -12,9 +14,15 @@ phImf  = unwrap(angle(hImf));
 ampImf = abs(hImf);
 
 pos_vector = 1:length(phImf)-1;
-imfStart   = pos_vector(diff(floor(phImf/(2*pi))) > 0) + 1;
-imfPeriod  = diff(imfStart) ./ fs;
+imfStart   = pos_vector(diff(floor(phImf        / (2*pi))) > 0) + 1;
+imfNadir   = pos_vector(diff(floor((phImf - pi) / (2*pi))) > 0) + 1;
 
+% Align: discard any nadirs that fall outside [first peak, last peak).
+% This removes spurious leading/trailing nadirs caused by signal edge phase.
+imfNadir(imfNadir <  imfStart(1))   = [];
+imfNadir(imfNadir >= imfStart(end)) = [];
+
+imfPeriod    = diff(imfStart) ./ fs;
 imfAmplitude = zeros(size(imfPeriod));
 for iC = 1:numel(imfPeriod)
     imfAmplitude(iC) = mean(ampImf(imfStart(iC):imfStart(iC+1)-1));
@@ -37,6 +45,7 @@ if numel(imfStart) >= 3
     ind(ind <= 0) = [];
 
     imfStart(ind)     = [];
+    imfNadir(ind)     = [];
     imfPeriod(ind)    = [];
     imfAmplitude(ind) = [];
 
@@ -44,6 +53,7 @@ if numel(imfStart) >= 3
     imfStart(end)=[];
 else
     imfStart     = nan;
+    imfNadir     = nan;
     imfPeriod    = nan;
     imfAmplitude = nan;
 end

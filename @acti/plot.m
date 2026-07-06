@@ -12,6 +12,8 @@ function h = plot(this, varargin)
 %               Call refresh* functions
 %           Feb 27, 2026
 %               Improve input parser to allow more parameters
+%           Jul 06, 2026
+%               Adjust ytick to avoid nonincreasing tick error
 % 
 
 % input parser
@@ -82,7 +84,7 @@ h.shallowAxis.XLim = [0 length(this.Point)];
 
 ytick = h.actiAxis.YTick;
 ytick(ytick < 0) = [];
-ytick = [yrange(1) + ptH*1.5 yrange(1) + ptH*4.5 ytick];
+ytick = [ytick(1) - ptH*4.5 ytick(1) - ptH*1.5 ytick];
 h.actiAxis.YTick = ytick;
 
 % reset exponent to 0 in case the following change removes the exponent

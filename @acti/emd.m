@@ -5,6 +5,9 @@ function this = emd(this)
 % $Date:    Mar 09, 2022
 % $Modif.:  Mar 24, 2026
 %               Revise to enable per cycle output
+%           Jul 06, 2026
+%               Add nadir output after LI_UPMEMD_CYCLE. Currently put nadir
+%               to UserData
 % 
 
 period = this.EMDInfo.TargetComponent;
@@ -33,7 +36,7 @@ fc = 1 / period / 3600;
 imf = li_upmemd(x, fs, fc);
 this.Circadian = imf(:, end) + mean(x, 'omitmissing');
 
-[cycleStart, cycleLength, cycleAmplitude] = ...
+[cycleStart, cycleLength, cycleAmplitude, cycleNadir] = ...
     li_upmemd_cycle(imf(:, end), fs*3600); % fs*3600 becomes 1/hr
 
 minCycle = numel(cycleStart); % this may later be changed to an input item
@@ -61,7 +64,9 @@ endTime = days((length(x)-1)*epoch / (3600*24)) + staTime;
 t       = linspace(staTime, endTime, length(x))';
 
 peakTime      = t(cycleStart);
-phaseInHour   = hour(peakTime) + minute(peakTime)/60 + second(peakTime)/3600;
+nadirTime     = t(cycleNadir);
+phaseInHour   = hour(peakTime)  + minute(peakTime)/60  + second(peakTime)/3600;
+nadirInHour   = hour(nadirTime) + minute(nadirTime)/60 + second(nadirTime)/3600;
 meanPhase     = mean(phaseInHour, 'omitnan');
 sdPhase       = std(phaseInHour, 'omitnan');
 
@@ -81,7 +86,10 @@ this.EMDSummary = table(meanAmplitude, sdAmplitude, meanPeriod, sdPeriod, meanPh
 
 this.EMDInfo.UserData.Verbose = verbose;
 this.EMDInfo.UserData.CycleLength = cycleLength;
+this.EMDInfo.UserData.PhasePoint  = cycleStart;
 this.EMDInfo.UserData.PhaseInHour = phaseInHour;
+this.EMDInfo.UserData.NadirPoint  = cycleNadir;
+this.EMDInfo.UserData.NadirInHour = nadirInHour;
 this.EMDInfo.UserData.CycleAmplitude = cycleAmplitude;
 
 this.message.content = 'EMD analysis is completed.';
