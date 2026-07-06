@@ -84,7 +84,7 @@ h.shallowAxis.XLim = [0 length(this.Point)];
 
 ytick = h.actiAxis.YTick;
 ytick(ytick < 0) = [];
-ytick = [ytick(1) - ptH*4.5 ytick(1) - ptH*1.5 ytick];
+ytick = [min(ytick) - ptH*4.5 min(ytick) - ptH*1.5 ytick];
 h.actiAxis.YTick = ytick;
 
 % reset exponent to 0 in case the following change removes the exponent

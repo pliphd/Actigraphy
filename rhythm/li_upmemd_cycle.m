@@ -6,6 +6,8 @@ function [imfStart, imfPeriod, imfAmplitude, imfNadir] = li_upmemd_cycle(comp, f
 % $Date:    Mar 24, 2023
 % $Modif.:  Jul 06, 2026
 %               Allow nadir output (phase = pi)
+%               Evaluate incomplete cycle based on whether nadir or peak
+%                   are true inflection points
 % 
 
 % find local peaks and cycle lengths
@@ -30,12 +32,42 @@ end
 
 % need at least three cycles to render
 if numel(imfStart) >= 3
-    if imfStart(1) / imfPeriod(1) < 0.25
-        % remove the first cycle if the start point of the cycle <1/4 of the
-        % period (to avoid edge effect)
-        imfStart(1)     = [];
-        imfPeriod(1)    = [];
-        imfAmplitude(1) = [];
+    halfWin = round(mean(imfPeriod) * fs / 4);   % ≈ quarter-period in samples
+
+    % --- Leading-edge check -------------------------------------------
+    % The earlier of {imfStart(1), imfNadir_raw(1)} is the boundary-artifact
+    % candidate; the one that arrives second is safe (a full cycle precedes it).
+    if ~isempty(imfNadir) && imfNadir(1) < imfStart(1)
+        % Nadir arrives first — evaluate it; peak is safe
+        if ~isLocalMin(comp, imfNadir(1), halfWin)
+            imfNadir(1) = [];
+        end
+    else
+        % Peak arrives first — evaluate it
+        if ~isLocalMax(comp, imfStart(1), halfWin)
+            imfStart(1)     = [];
+            imfPeriod(1)    = [];
+            imfAmplitude(1) = [];
+        end
+    end
+
+    % --- Trailing-edge check ------------------------------------------
+    % The later of {imfStart(end), imfNadir_raw(end)} is the boundary-artifact
+    % candidate (e.g. a phase crossing at the rising signal tail).
+    if ~isempty(imfNadir) && numel(imfStart) >= 2
+        if imfStart(end) > imfNadir(end)
+            % Peak arrives last — evaluate it
+            if ~isLocalMax(comp, imfStart(end), halfWin)
+                imfStart(end)     = [];
+                imfPeriod(end)    = [];
+                imfAmplitude(end) = [];
+            end
+        else
+            % Nadir arrives last — evaluate it; peaks are safe
+            if ~isLocalMin(comp, imfNadir(end), halfWin)
+                imfNadir(end) = [];
+            end
+        end
     end
 
     % remove those cycles with phase changes less than 2*pi and previous cycles
@@ -48,12 +80,25 @@ if numel(imfStart) >= 3
     imfNadir(ind)     = [];
     imfPeriod(ind)    = [];
     imfAmplitude(ind) = [];
-
-    % remove the start time of the last cycle (which is not complete)
-    imfStart(end)=[];
 else
     imfStart     = nan;
     imfNadir     = nan;
     imfPeriod    = nan;
     imfAmplitude = nan;
+end
+end
+
+function tf = isLocalMax(sig, idx, halfWin)
+% True when the maximum of sig in [idx±halfWin] lies within halfWin/2 of idx.
+lo = max(1, idx - halfWin);
+hi = min(length(sig), idx + halfWin);
+[~, k] = max(sig(lo:hi));
+tf = abs((lo + k - 1) - idx) <= max(1, round(halfWin / 2));
+end
+
+function tf = isLocalMin(sig, idx, halfWin)
+lo = max(1, idx - halfWin);
+hi = min(length(sig), idx + halfWin);
+[~, k] = min(sig(lo:hi));
+tf = abs((lo + k - 1) - idx) <= max(1, round(halfWin / 2));
 end

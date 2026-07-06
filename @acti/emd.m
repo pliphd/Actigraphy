@@ -39,7 +39,7 @@ this.Circadian = imf(:, end) + mean(x, 'omitmissing');
 [cycleStart, cycleLength, cycleAmplitude, cycleNadir] = ...
     li_upmemd_cycle(imf(:, end), fs*3600); % fs*3600 becomes 1/hr
 
-minCycle = numel(cycleStart); % this may later be changed to an input item
+minCycle = numel(cycleLength); % this may later be changed to an input item
 
 % request output
 meanAmplitude = mean(cycleAmplitude(1:minCycle), 'omitnan');
