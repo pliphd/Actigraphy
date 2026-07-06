@@ -95,16 +95,26 @@ end
 end
 
 function tf = isLocalMax(sig, idx, halfWin)
-% True when the maximum of sig in [idx±halfWin] lies within halfWin/2 of idx.
-lo = max(1, idx - halfWin);
-hi = min(length(sig), idx + halfWin);
-[~, k] = max(sig(lo:hi));
-tf = abs((lo + k - 1) - idx) <= max(1, round(halfWin / 2));
+% A genuine peak has the signal rising before it and falling after it.
+% Use halfWin/2 (≈ period/8) so the slope window stays within one half-cycle.
+nearWin = max(2, round(halfWin / 2));
+lo = max(1, idx - nearWin);
+hi = min(length(sig), idx + nearWin);
+% Need at least one sample on each side; if idx is at a boundary, reject
+if lo >= idx || idx >= hi
+    tf = false; return
+end
+tf = mean(diff(sig(lo:idx))) > 0 ...   % rising approach
+    && mean(diff(sig(idx:hi))) < 0;       % falling departure
 end
 
 function tf = isLocalMin(sig, idx, halfWin)
-lo = max(1, idx - halfWin);
-hi = min(length(sig), idx + halfWin);
-[~, k] = min(sig(lo:hi));
-tf = abs((lo + k - 1) - idx) <= max(1, round(halfWin / 2));
+nearWin = max(2, round(halfWin / 2));
+lo = max(1, idx - nearWin);
+hi = min(length(sig), idx + nearWin);
+if lo >= idx || idx >= hi
+    tf = false; return
+end
+tf = mean(diff(sig(lo:idx))) < 0 ...   % falling approach
+    && mean(diff(sig(idx:hi))) > 0;       % rising departure
 end
