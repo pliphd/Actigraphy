@@ -19,11 +19,6 @@ pos_vector = 1:length(phImf)-1;
 imfStart   = pos_vector(diff(floor(phImf        / (2*pi))) > 0) + 1;
 imfNadir   = pos_vector(diff(floor((phImf - pi) / (2*pi))) > 0) + 1;
 
-% Align: discard any nadirs that fall outside [first peak, last peak).
-% This removes spurious leading/trailing nadirs caused by signal edge phase.
-imfNadir(imfNadir <  imfStart(1))   = [];
-imfNadir(imfNadir >= imfStart(end)) = [];
-
 imfPeriod    = diff(imfStart) ./ fs;
 imfAmplitude = zeros(size(imfPeriod));
 for iC = 1:numel(imfPeriod)
